@@ -5,13 +5,13 @@ using namespace std;
 
 class Node{
     public:
-        int rank;
         int file;
+        int rank;
         char value;
 
-        Node(int row, int column, char v){
-            rank = row;
+        Node(int column, int row, char v){
             file = column;
+            rank = row;
             value = v;
         }
 };
@@ -36,23 +36,23 @@ class Grid{
         }
 
         void createGrid(){
-            int i = 0;
-            int j = 0;
+            int i = 7;
+            int j = 1;
             for(int position = 0; position < positionOfPieces.length(); position++){
                 char c = positionOfPieces[position];
                 if(isdigit(c)){
                     int intC = int(c)-48;
                     for(int k = 0; k < intC; k++){
-                        createNode(i, j, 'y'); 
+                        createNode(j, i, 'y'); 
                         j++;
                     }
                 }
                 else if(c == '/'){
-                    i++;
-                    j = 0;
+                    i--;
+                    j = 1;
                 }
                 else{
-                    createNode(i, j, c);
+                    createNode(j, i, c);
                     j++;
                 }
             }
@@ -71,10 +71,17 @@ class Grid{
             }
         }
 
-        // void printNodeInfo(int i){
-        //     Node node = grid[i];
-        //     cout << "Node x: " << node.
-        // }
+        Node getNode(int file, int rank){
+            if(rank == 0 || file == 0){
+                cout << "Rank or File should not be 0!\n";
+            }
+            return grid[49 - 7*rank + file -1];
+        }
+
+        void printNodeInfo(int file, int rank){
+            Node node = getNode(file, rank);
+            cout << node.file << "," << node.rank << " = " << node.value << endl;
+        }
 };
 
 int main(){
@@ -89,7 +96,7 @@ int main(){
     Grid grid(position, side, moveNum);
     grid.createGrid();
     grid.printGrid();
-    // cout << grid[0].
+    grid.printNodeInfo(1,1);
 
     return 0;
 }
