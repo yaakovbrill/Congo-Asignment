@@ -5,13 +5,15 @@ using namespace std;
 
 class Node{
     public:
-        int file;
+        char file;
         int rank;
         char value;
+        string position;
 
         Node(int column, int row, char v){
-            file = column;
+            file = char(column+96);
             rank = row;
+            position = file + to_string(rank);
             value = v;
         }
 };
@@ -20,13 +22,20 @@ class Grid{
     public:
         vector<Node> grid;
         string positionOfPieces;
-        char sideToMove;
+        string sideToMove;
         int moveNumber;
+
+        vector<vector<string>> peicesPositions = {{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}};
 
         //constructor
         Grid(string position, char side, int moveNum){
             positionOfPieces = position;
-            sideToMove = side;
+            if(side == 'w'){
+                sideToMove = "white";
+            }
+            else{
+                sideToMove = "black";
+            }
             moveNumber = moveNum;
         }
 
@@ -80,23 +89,159 @@ class Grid{
 
         void printNodeInfo(int file, int rank){
             Node node = getNode(file, rank);
-            cout << node.file << "," << node.rank << " = " << node.value << endl;
+            cout << node.position << " = " << node.value << endl;
+        }
+
+        void addLocationOfPieces(){
+            for(int i = 1; i <= 7; i++){
+                for(int j = 1; j <= 7; j++){
+                    Node node = getNode(i, j);
+                    char peice = node.value;
+                    if(peice == 'P'){
+                        peicesPositions[0].push_back(node.position);
+                    }
+                    else if(peice == 'p'){
+                        peicesPositions[1].push_back(node.position);
+                    }
+                    else if(peice == 'S'){
+                        peicesPositions[2].push_back(node.position);
+                    }
+                    else if(peice == 's'){
+                        peicesPositions[3].push_back(node.position);
+                    }
+                    else if(peice == 'G'){
+                        peicesPositions[4].push_back(node.position);
+                    }
+                    else if(peice == 'g'){
+                        peicesPositions[5].push_back(node.position);
+                    }
+                    else if(peice == 'M'){
+                        peicesPositions[6].push_back(node.position);
+                    }
+                    else if(peice == 'm'){
+                        peicesPositions[7].push_back(node.position);
+                    }
+                    else if(peice == 'E'){
+                        peicesPositions[8].push_back(node.position);
+                    }
+                    else if(peice == 'e'){
+                        peicesPositions[9].push_back(node.position);
+                    }
+                    else if(peice == 'L'){
+                        peicesPositions[10].push_back(node.position);
+                    }
+                    else if(peice == 'l'){
+                        peicesPositions[11].push_back(node.position);
+                    }
+                    else if(peice == 'C'){
+                        peicesPositions[12].push_back(node.position);
+                    }
+                    else if(peice == 'c'){
+                        peicesPositions[13].push_back(node.position);
+                    }
+                    else if(peice == 'Z'){
+                        peicesPositions[14].push_back(node.position);
+                    }
+                    else if(peice == 'z'){
+                        peicesPositions[15].push_back(node.position);
+                    }
+                }
+            }
+        }
+
+        void printLocationOfPieces(){
+            for(int i = 0; i < 16; i++){
+                if(i == 0){
+                    cout << "white pawn:";
+                }
+                else if(i == 1){
+                    cout << "black pawn:";
+                }
+                else if(i == 2){
+                    cout << "white superpawn:";
+                }
+                else if(i == 3){
+                    cout << "black superpawn:";
+                }
+                else if(i == 4){
+                    cout << "white giraffe:";
+                }
+                else if(i == 5){
+                    cout << "black giraffe:";
+                }
+                else if(i == 6){
+                    cout << "white monkey:";
+                }
+                else if(i == 7){
+                    cout << "black monkey:";
+                }
+                else if(i == 8){
+                    cout << "white elephant:";
+                }
+                else if(i == 9){
+                    cout << "black elephant:";
+                }
+                else if(i == 10){
+                    cout << "white lion:";
+                }
+                else if(i == 11){
+                    cout << "black lion:";
+                }
+                else if(i == 12){
+                    cout << "white crocodile:";
+                }
+                else if(i == 13){
+                    cout << "black crocodile:";
+                }
+                else if(i == 14){
+                    cout << "white zebra:";
+                }
+                else if(i == 15){
+                    cout << "black zebra:";
+                }
+                int size = peicesPositions[i].size();
+                for(int j = 0; j < size; j++){
+                    cout << " " << peicesPositions[i][j];
+                }
+                cout << endl;
+            }
+        }
+
+        void printSideToMove(){
+            cout << "side to play: " << sideToMove;
         }
 };
 
 int main(){
 
     //read FEN string
+    int N;
+    cin >> N;
+    vector<string> positionOfPiecesArray(N);
+    vector<char> sideToMoveArray(N);
+    vector<int> moveNumberArray(N);
     string position;
     char side;
     int moveNum;
-    cin >> position >> side >> moveNum;
+    for(int i = 0; i < N; i++){
+        cin >> position >> side >> moveNum;
+        positionOfPiecesArray[i] = position;
+        sideToMoveArray[i] = side;
+        moveNumberArray[i] = moveNum;
+    }
 
     //create a grid
-    Grid grid(position, side, moveNum);
-    grid.createGrid();
-    grid.printGrid();
-    grid.printNodeInfo(1,1);
+    for(int i = 0; i < N; i++){
+        Grid grid(positionOfPiecesArray[i], sideToMoveArray[i], moveNumberArray[i]);
+        grid.createGrid();
+        // grid.printGrid();
+        grid.addLocationOfPieces();
+        grid.printLocationOfPieces();
+        grid.printSideToMove();
+        if(i != N-1){
+            cout << endl << endl;
+        }        
+    }
 
     return 0;
 }
