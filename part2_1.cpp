@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <ctype.h>
 
 using namespace std;
 
@@ -7,7 +8,7 @@ class Node{
     public:
         char file;
         int rank;
-        char value;
+        char peice;
         string position;
         int columnNum;
         int rowNum;
@@ -25,7 +26,7 @@ class Node{
             file = char(column+96);
             rank = row;
             position = file + to_string(rank);
-            value = v;
+            peice = v;
             columnNum = column;
             rowNum = row;
         }
@@ -38,7 +39,14 @@ class Grid{
         string sideToMove;
         int moveNumber;
 
-        vector<vector<string>> peicesPositions = {{},{},{},{},{},{},{},{},{},{},{},{},{},{},{},{}};
+        vector<Node*> whitePawnPositions;
+        vector<Node*> blackPawnPositions;
+        vector<Node*> whiteElephantPositions;
+        vector<Node*> blackElephantPositions;
+        Node *whiteLionPosition;
+        Node *blackLionPosition;
+        Node *whiteZebraPosition;
+        Node *blackZebraPosition;
 
         //constructor
         Grid(string position, char side, int moveNum){
@@ -84,10 +92,10 @@ class Grid{
             for(int i = 0; i < 7; i++){
                 for(int j = 0; j < 7; j++){
                     if(j != 6){
-                        cout << grid[i * 7 + j].value << " ";
+                        cout << grid[i * 7 + j].peice << " ";
                     }
                     else{
-                        cout << grid[i * 7 + j].value << endl;
+                        cout << grid[i * 7 + j].peice << endl;
                     }
                 }
             }
@@ -102,121 +110,39 @@ class Grid{
 
         void printNodeInfo(int file, int rank){
             Node *node = getNode(file, rank);
-            cout << node->position << " = " << node->value << endl;
+            cout << node->position << " = " << node->peice << endl;
         }
 
         void addLocationOfPieces(){
             for(int i = 1; i <= 7; i++){
                 for(int j = 1; j <= 7; j++){
                     Node *node = getNode(i, j);
-                    char peice = node->value;
+                    char peice = node->peice;
                     if(peice == 'P'){
-                        peicesPositions[0].push_back(node->position);
+                        whitePawnPositions.push_back(node);
                     }
                     else if(peice == 'p'){
-                        peicesPositions[1].push_back(node->position);
-                    }
-                    else if(peice == 'S'){
-                        peicesPositions[2].push_back(node->position);
-                    }
-                    else if(peice == 's'){
-                        peicesPositions[3].push_back(node->position);
-                    }
-                    else if(peice == 'G'){
-                        peicesPositions[4].push_back(node->position);
-                    }
-                    else if(peice == 'g'){
-                        peicesPositions[5].push_back(node->position);
-                    }
-                    else if(peice == 'M'){
-                        peicesPositions[6].push_back(node->position);
-                    }
-                    else if(peice == 'm'){
-                        peicesPositions[7].push_back(node->position);
+                        blackPawnPositions.push_back(node); 
                     }
                     else if(peice == 'E'){
-                        peicesPositions[8].push_back(node->position);
+                        whiteElephantPositions.push_back(node);
                     }
                     else if(peice == 'e'){
-                        peicesPositions[9].push_back(node->position);
+                        blackElephantPositions.push_back(node);
                     }
                     else if(peice == 'L'){
-                        peicesPositions[10].push_back(node->position);
+                        whiteLionPosition = node;
                     }
                     else if(peice == 'l'){
-                        peicesPositions[11].push_back(node->position);
-                    }
-                    else if(peice == 'C'){
-                        peicesPositions[12].push_back(node->position);
-                    }
-                    else if(peice == 'c'){
-                        peicesPositions[13].push_back(node->position);
+                        blackLionPosition = node;
                     }
                     else if(peice == 'Z'){
-                        peicesPositions[14].push_back(node->position);
+                        whiteZebraPosition = node;
                     }
                     else if(peice == 'z'){
-                        peicesPositions[15].push_back(node->position);
+                        blackZebraPosition = node;
                     }
                 }
-            }
-        }
-
-        void printLocationOfPieces(){
-            for(int i = 0; i < 16; i++){
-                if(i == 0){
-                    cout << "white pawn:";
-                }
-                else if(i == 1){
-                    cout << "black pawn:";
-                }
-                else if(i == 2){
-                    cout << "white superpawn:";
-                }
-                else if(i == 3){
-                    cout << "black superpawn:";
-                }
-                else if(i == 4){
-                    cout << "white giraffe:";
-                }
-                else if(i == 5){
-                    cout << "black giraffe:";
-                }
-                else if(i == 6){
-                    cout << "white monkey:";
-                }
-                else if(i == 7){
-                    cout << "black monkey:";
-                }
-                else if(i == 8){
-                    cout << "white elephant:";
-                }
-                else if(i == 9){
-                    cout << "black elephant:";
-                }
-                else if(i == 10){
-                    cout << "white lion:";
-                }
-                else if(i == 11){
-                    cout << "black lion:";
-                }
-                else if(i == 12){
-                    cout << "white crocodile:";
-                }
-                else if(i == 13){
-                    cout << "black crocodile:";
-                }
-                else if(i == 14){
-                    cout << "white zebra:";
-                }
-                else if(i == 15){
-                    cout << "black zebra:";
-                }
-                int size = peicesPositions[i].size();
-                for(int j = 0; j < size; j++){
-                    cout << " " << peicesPositions[i][j];
-                }
-                cout << endl;
             }
         }
 
@@ -251,21 +177,215 @@ class Grid{
                 }
             }
         }
+
+        bool isBlockValid(string colorCameFrom, Node *node){
+            bool isWhite = true;
+            if(colorCameFrom != "white"){
+                isWhite = false;
+            }
+            if(node != nullptr){
+                string colorGoinTo = getColor(node);
+                if(colorGoinTo == "empty"){  //empty node
+                    return true;
+                }
+                else if(colorGoinTo == "white"){  //we are going to a white peice
+                    if(!isWhite){
+                        return true;
+                    }
+                }
+                else{  //we are going to a black peice
+                    if(isWhite){
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        bool isCapital(char c){
+            if(int(c) >=65 && int(c <=90)){
+                return true;
+            }
+            return false;
+        }
+
+        string getColor(Node *node){
+            char peice = node->peice;
+            if(peice == 'y'){
+                return "empty";
+            }
+            else if(isCapital(peice)){
+                return "white";
+            }
+            else{
+                return "black";
+            }
+        }
+
+        bool isInCastle(string myColor, Node *node){
+            if(node->columnNum >= 3 && node->columnNum <= 5){
+                if(myColor == "white"){
+                    if(node->rowNum <= 3){
+                        return true;
+                    }
+                }
+                else{
+                    if(node->rowNum >=5){
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        Node* getLionToLionMove(Node *node, string myColor){    //////////////////////need to test this function
+            Node *temp = node;
+            if(myColor == "white"){
+                if(node->rowNum == 3){
+                    if(node->columnNum == 5){
+                        temp = node->topLeft;
+                        string colorGoinTo = getColor(temp);
+                        if(colorGoinTo == "empty"){
+                            temp = temp->topLeft;
+                            if(temp->peice == 'l'){
+                                return temp;
+                            }
+                        }
+                    }
+                    else if(node->columnNum == 3){
+                        temp = node->topRight;
+                        string colorGoinTo = getColor(temp);
+                        if(colorGoinTo == "empty"){
+                            temp = temp->topRight;
+                            if(temp->peice == 'l'){
+                                return temp;
+                            }
+                        }
+                    }
+                }
+                temp = temp->top;
+                while(temp != nullptr){
+                    if(temp->peice == 'l'){
+                        return temp;
+                    }
+                    else{
+                        string colorGoinTo = getColor(temp);
+                        if(colorGoinTo == "empty"){
+                            temp = temp->top;
+                        }
+                        else{
+                            break;
+                        }
+                    }
+                }
+            }
+            else{  //myColor is black
+                if(node->rowNum == 5){
+                    if(node->columnNum == 5){
+                        temp = node->bottomLeft;
+                        string colorGoinTo = getColor(temp);
+                        if(colorGoinTo == "empty"){
+                            temp = temp->bottomLeft;
+                            if(temp->peice == 'L'){
+                                return temp;
+                            }
+                        }
+                    }
+                    else if(node->columnNum == 3){
+                        temp = node->bottomRight;
+                        string colorGoinTo = getColor(temp);
+                        if(colorGoinTo == "empty"){
+                            temp = temp->bottomRight;
+                            if(temp->peice == 'L'){
+                                return temp;
+                            }
+                        }
+                    }
+                }
+                temp = temp->bottom;
+                while(temp != nullptr){
+                    if(temp->peice == 'L'){
+                        return temp;
+                    }
+                    else{
+                        string colorGoinTo = getColor(temp);
+                        if(colorGoinTo == "empty"){
+                            temp = temp->bottom;
+                        }
+                        else{
+                            break;
+                        }
+                    }
+                }
+            }
+            return nullptr;
+        }
+
+        void sortLionMoves(Node *lionToLion, vector<Node*> &lionMoves){   ////must check
+            string stringA = lionToLion->position;
+            for(int i =0; i < lionMoves.size(); i++){
+                string stringB = lionMoves[i]->position;
+                if(stringA.compare(stringB) < 0){ 
+                    lionMoves.insert(lionMoves.begin() + i, lionToLion);
+                    return;
+                }
+            }
+            lionMoves.push_back(lionToLion);
+        }
+
+        vector<Node*> getLionMoves(Node *node){
+            string pos = node->position;
+            string myColor = getColor(node);
+            Node *lionToLion = getLionToLionMove(node, myColor);
+            vector<Node*> aroundNode = {node->bottomLeft, node->left, node->topLeft, node->bottom, node->top, node->bottomRight, node->right, node->topRight};
+            vector<Node*> lionMoves;
+            for(Node *nodeTo: aroundNode){
+                if(isBlockValid(myColor, nodeTo)){
+                    if(isInCastle(myColor, nodeTo)){
+                        lionMoves.push_back(nodeTo);
+                    }
+                }
+            }
+            if(lionToLion != nullptr){
+                sortLionMoves(lionToLion, lionMoves);
+            }
+            return lionMoves;
+        }
+
+        void printLionMove(Node *node, vector<Node*> lionMoves){
+            string pos = node->position;
+            for(int i = 0; i < lionMoves.size(); i++){
+                cout << pos << lionMoves[i]->position;
+                if(i != lionMoves.size()-1){
+                    cout << " ";
+                }
+                else{
+                    cout << endl;
+                }
+            }
+        }
+
+        Node* getLionTurnPosition(){
+            if(sideToMove == "white"){
+                return whiteLionPosition;
+            }
+            return blackLionPosition;
+        }
 };
 
 int main(){
 
     //read FEN string
     int N = 1;
-    // cin >> N;
+    cin >> N;
     vector<string> positionOfPiecesArray(N);
     vector<char> sideToMoveArray(N);
     vector<int> moveNumberArray(N);
-    string position = "2l4/7/4z2/4c2/PP2EP1/3L2p/7";
-    char side = 'b';
-    int moveNum = 23;
+    string position = "2ele1z/ppppppp/7/7/7/PPP1PPP/2ELE1Z";
+    char side = 'w';
+    int moveNum = 4;
     for(int i = 0; i < N; i++){
-        // cin >> position >> side >> moveNum;
+        cin >> position >> side >> moveNum;
         positionOfPiecesArray[i] = position;
         sideToMoveArray[i] = side;
         moveNumberArray[i] = moveNum;
@@ -281,19 +401,24 @@ int main(){
         // grid.printSideToMove();
         
         grid.setNodeAdjacencies(); 
-        Node *node = grid.getNode(4, 4);
-        cout << node->position << endl; 
-        cout << node->right->position << endl; 
-        cout << node->topRight->position << endl; 
-        cout << node->top->position << endl; 
-        cout << node->topLeft->position << endl; 
-        cout << node->left->position << endl; 
-        cout << node->bottomLeft->position << endl; 
-        cout << node->bottom->position << endl; 
-        cout << node->bottomRight->position << endl; 
-        if(node->bottomRight == nullptr){
-            cout << "Null!" << endl;
-        }
+        Node *node = grid.getLionTurnPosition();
+        // cout << node->position << endl; 
+        // cout << node->right->position << endl; 
+        // cout << node->topRight->position << endl; 
+        // cout << node->top->position << endl; 
+        // cout << node->topLeft->position << endl; 
+        // cout << node->left->position << endl; 
+        // cout << node->bottomLeft->position << endl; 
+        // cout << node->bottom->position << endl; 
+        // cout << node->bottomRight->position << endl; 
+        // if(node->bottomRight == nullptr){
+        //     cout << "Null!" << endl;
+        // }
+
+        // cout << grid.whiteElephantPositions[0]->bottom->position;
+        vector<Node*> lionMoves = grid.getLionMoves(node);
+        grid.printLionMove(node, lionMoves);
+
     }
 
     return 0;
