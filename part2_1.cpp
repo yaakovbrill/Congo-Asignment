@@ -238,8 +238,8 @@ class Grid{
             return false;
         }
 
-        Node* getLionToLionMove(Node *node, string myColor){    //////////////////////need to test this function
-            Node *temp = node;
+        Node* getLionToLionMove(Node *node, string myColor){
+            Node *temp;
             if(myColor == "white"){
                 if(node->rowNum == 3){
                     if(node->columnNum == 5){
@@ -263,7 +263,7 @@ class Grid{
                         }
                     }
                 }
-                temp = temp->top;
+                temp = node->top;
                 while(temp != nullptr){
                     if(temp->peice == 'l'){
                         return temp;
@@ -302,7 +302,7 @@ class Grid{
                         }
                     }
                 }
-                temp = temp->bottom;
+                temp = node->bottom;
                 while(temp != nullptr){
                     if(temp->peice == 'L'){
                         return temp;
@@ -321,7 +321,7 @@ class Grid{
             return nullptr;
         }
 
-        void sortLionMoves(Node *lionToLion, vector<Node*> &lionMoves){   ////must check
+        void sortLionMoves(Node *lionToLion, vector<Node*> &lionMoves){
             string stringA = lionToLion->position;
             for(int i =0; i < lionMoves.size(); i++){
                 string stringB = lionMoves[i]->position;
@@ -381,9 +381,9 @@ int main(){
     vector<string> positionOfPiecesArray(N);
     vector<char> sideToMoveArray(N);
     vector<int> moveNumberArray(N);
-    string position = "2ele1z/ppppppp/7/7/7/PPP1PPP/2ELE1Z";
-    char side = 'w';
-    int moveNum = 4;
+    string position = "4E2/p2l3/2P1p2/7/3e2P/4P2/3L3";
+    char side = 'b';
+    int moveNum = 36;
     for(int i = 0; i < N; i++){
         cin >> position >> side >> moveNum;
         positionOfPiecesArray[i] = position;
@@ -395,25 +395,13 @@ int main(){
     for(int i = 0; i < N; i++){
         Grid grid(positionOfPiecesArray[i], sideToMoveArray[i], moveNumberArray[i]);
         grid.createGrid();
-        // grid.printGrid();
+        grid.printGrid();
         grid.addLocationOfPieces();
         // grid.printLocationOfPieces();
         // grid.printSideToMove();
         
         grid.setNodeAdjacencies(); 
         Node *node = grid.getLionTurnPosition();
-        // cout << node->position << endl; 
-        // cout << node->right->position << endl; 
-        // cout << node->topRight->position << endl; 
-        // cout << node->top->position << endl; 
-        // cout << node->topLeft->position << endl; 
-        // cout << node->left->position << endl; 
-        // cout << node->bottomLeft->position << endl; 
-        // cout << node->bottom->position << endl; 
-        // cout << node->bottomRight->position << endl; 
-        // if(node->bottomRight == nullptr){
-        //     cout << "Null!" << endl;
-        // }
 
         // cout << grid.whiteElephantPositions[0]->bottom->position;
         vector<Node*> lionMoves = grid.getLionMoves(node);
