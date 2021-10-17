@@ -22,6 +22,8 @@ class Node{
         Node *bottom = nullptr;
         Node *bottomRight = nullptr;
 
+        vector<Node*> possibleMoves;
+
         Node(int column, int row, char v){
             file = char(column+96);
             rank = row;
@@ -333,7 +335,7 @@ class Grid{
             lionMoves.push_back(lionToLion);
         }
 
-        vector<Node*> getLionMoves(Node *node){
+        void getLionMoves(Node *node){
             string pos = node->position;
             string myColor = getColor(node);
             Node *lionToLion = getLionToLionMove(node, myColor);
@@ -349,10 +351,13 @@ class Grid{
             if(lionToLion != nullptr){
                 sortLionMoves(lionToLion, lionMoves);
             }
-            return lionMoves;
+
+            for(Node *lionMove: lionMoves){
+                node->possibleMoves.push_back(lionMove);
+            }
         }
 
-        vector<Node*> getZebraMoves(Node *node){
+        void getZebraMoves(Node *node){
             Node *nodeTo, *temp;
             string pos = node->position;
             string myColor = getColor(node);
@@ -403,18 +408,73 @@ class Grid{
                     }
                 }
             }
-            return zebraMoves;
+            for(Node *zebraMove: zebraMoves){
+                node->possibleMoves.push_back(zebraMove);
+            }
         }
 
-        void printPeiceMove(Node *node, vector<Node*> peiceMoves){
+        void getElephantsMoves(Node *node){
+            Node *nodeTo, *temp;
+            string pos = node->position;
+            string myColor = getColor(node);
+            for(int i = 0; i < 4; i++){
+                if(i == 0){
+                    nodeTo = node->left;
+                }
+                else if(i == 1){
+                    nodeTo = node->bottom;
+                }
+                else if(i == 2){
+                    nodeTo = node->top;
+                }
+                else{
+                    nodeTo = node->right;
+                }
+                if(nodeTo != nullptr){
+                    if(i == 0){
+                        temp = nodeTo->left;
+                    }
+                    else if(i == 1){
+                        temp = nodeTo->bottom;
+                    }
+                    else if(i == 2){
+                        if(isBlockValid(myColor, nodeTo)){
+                            node->possibleMoves.push_back(nodeTo);
+                        }
+                        temp = nodeTo->top;
+                    }
+                    else{
+                        if(isBlockValid(myColor, nodeTo)){
+                            node->possibleMoves.push_back(nodeTo);
+                        }
+                        temp = nodeTo->right;
+                    }
+                }
+                else{
+                    continue;
+                }
+
+                if(temp != nullptr){
+                    if(isBlockValid(myColor, temp)){
+                        node->possibleMoves.push_back(temp);
+                    }
+                }
+                if(i == 2 || i == 3){
+                    continue;
+                }
+                if(isBlockValid(myColor, nodeTo)){
+                    node->possibleMoves.push_back(nodeTo);
+                }
+            }
+        }
+
+        void printPeiceMove(Node *node){
+            vector<Node*> peiceMoves = node->possibleMoves;
             string pos = node->position;
             for(int i = 0; i < peiceMoves.size(); i++){
                 cout << pos << peiceMoves[i]->position;
                 if(i != peiceMoves.size()-1){
                     cout << " ";
-                }
-                else{
-                    cout << endl;
                 }
             }
         }
@@ -432,6 +492,13 @@ class Grid{
             }
             return blackZebraPosition;
         }
+
+        vector<Node*> getElephantsTurnPosition(){
+            if(sideToMove == "white"){
+                return whiteElephantPositions;
+            }
+            return blackElephantPositions;
+        }
 };
 
 int main(){
@@ -442,9 +509,9 @@ int main(){
     vector<string> positionOfPiecesArray(N);
     vector<char> sideToMoveArray(N);
     vector<int> moveNumberArray(N);
-    string position = "7/2p4/2PlpP1/1P5/p6/3L3/7";
+    string position = "4E2/1pl3p/1p2pEP/4P1p/1PPL1ZP/p2pPPz/7";
     char side = 'w';
-    int moveNum = 36;
+    int moveNum = 40;
     for(int i = 0; i < N; i++){
         cin >> position >> side >> moveNum;
         positionOfPiecesArray[i] = position;
@@ -464,20 +531,31 @@ int main(){
         // cout << grid.whiteElephantPositions[0]->bottom->position;
          
         //lion's moves
-        // Node *nodeLion = grid.getLionTurnPosition();
-        // vector<Node*> lionMoves = grid.getLionMoves(nodeLion);
-        // grid.printPeiceMove(nodeLion, lionMoves);
+        Node *nodeLion = grid.getLionTurnPosition();
+        grid.getLionMoves(nodeLion);
+        // grid.printPeiceMove(nodeLion);
 
         //zebra's moves
         Node *nodeZebra = grid.getZebraTurnPosition();
         if(nodeZebra != nullptr){
-            vector<Node*> zebraMoves = grid.getZebraMoves(nodeZebra);
-            grid.printPeiceMove(nodeZebra, zebraMoves);
-        }
-        else{
-            cout << endl;
+            grid.getZebraMoves(nodeZebra);
+            // grid.printPeiceMove(nodeZebra);
         }
 
+        //elephant's moves
+        vector<Node*> nodeElephants = grid.getElephantsTurnPosition();
+        bool printSpace = false;
+        for(Node *nodeElephant: nodeElephants){
+            grid.getElephantsMoves(nodeElephant);
+            if(printSpace){
+                cout << " ";
+            }
+            else{
+                printSpace = true;
+            }
+            grid.printPeiceMove(nodeElephant);
+        }
+        cout << endl;
     }
 
     return 0;
