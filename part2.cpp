@@ -468,14 +468,80 @@ class Grid{
             }
         }
 
-        void printPeiceMove(Node *node){
+        void getPawnsMoves(Node *node){
+            Node *nodeTo, *temp;
+            string pos = node->position;
+            string myColor = getColor(node);
+            if(myColor == "white"){
+                nodeTo = node->topLeft;
+                if(isBlockValid(myColor, nodeTo)){
+                    node->possibleMoves.push_back(nodeTo);
+                }
+                if(node->rank > 4){
+                    nodeTo = node->bottom;
+                    if(nodeTo != nullptr){
+                        if(nodeTo->peice == 'y'){
+                            temp = nodeTo->bottom;
+                            if(temp->peice == 'y'){
+                                node->possibleMoves.push_back(temp);
+                            }
+                        }
+                        if(nodeTo != nullptr && nodeTo->peice == 'y'){
+                            node->possibleMoves.push_back(nodeTo);
+                        }
+                    }
+                }
+                nodeTo = node->top;
+                if(isBlockValid(myColor, nodeTo)){
+                    node->possibleMoves.push_back(nodeTo);
+                }
+                nodeTo = node->topRight;
+                if(isBlockValid(myColor, nodeTo)){
+                    node->possibleMoves.push_back(nodeTo);
+                }
+            }
+            else if(myColor == "black"){
+                nodeTo = node->bottomLeft;
+                if(isBlockValid(myColor, nodeTo)){
+                    node->possibleMoves.push_back(nodeTo);
+                }
+                nodeTo = node->bottom;
+                if(isBlockValid(myColor, nodeTo)){
+                    node->possibleMoves.push_back(nodeTo);
+                }
+                if(node->rank < 4){
+                    nodeTo = node->top;
+                    if(nodeTo != nullptr){
+                        if(nodeTo->peice == 'y'){
+                            node->possibleMoves.push_back(nodeTo);
+                            temp = nodeTo->top;
+                            if(temp->peice == 'y'){
+                                node->possibleMoves.push_back(temp);
+                            }
+                        }
+                    }
+                }
+                nodeTo = node->bottomRight;
+                if(isBlockValid(myColor, nodeTo)){
+                    node->possibleMoves.push_back(nodeTo);
+                }
+            }
+        }
+
+        void printPeiceMove(Node *node, bool &b){
             vector<Node*> peiceMoves = node->possibleMoves;
             string pos = node->position;
             for(int i = 0; i < peiceMoves.size(); i++){
-                cout << pos << peiceMoves[i]->position;
-                if(i != peiceMoves.size()-1){
+                if(b){
                     cout << " ";
                 }
+                else{
+                    b = true;
+                }
+                cout << pos << peiceMoves[i]->position;
+                // if(i != peiceMoves.size()-1){
+                //     cout << " ";
+                // }
             }
         }
 
@@ -499,6 +565,13 @@ class Grid{
             }
             return blackElephantPositions;
         }
+
+        vector<Node*> getPawnsTurnPosition(){
+            if(sideToMove == "white"){
+                return whitePawnPositions;
+            }
+            return blackPawnPositions;
+        }
 };
 
 int main(){
@@ -509,8 +582,8 @@ int main(){
     vector<string> positionOfPiecesArray(N);
     vector<char> sideToMoveArray(N);
     vector<int> moveNumberArray(N);
-    string position = "4E2/1pl3p/1p2pEP/4P1p/1PPL1ZP/p2pPPz/7";
-    char side = 'w';
+    string position = "2El3/1p1Z2P/6p/5E1/4Lp1/4p2/1E1E3";
+    char side = 'b';
     int moveNum = 40;
     for(int i = 0; i < N; i++){
         cin >> position >> side >> moveNum;
@@ -544,16 +617,17 @@ int main(){
 
         //elephant's moves
         vector<Node*> nodeElephants = grid.getElephantsTurnPosition();
-        bool printSpace = false;
         for(Node *nodeElephant: nodeElephants){
             grid.getElephantsMoves(nodeElephant);
-            if(printSpace){
-                cout << " ";
-            }
-            else{
-                printSpace = true;
-            }
-            grid.printPeiceMove(nodeElephant);
+            // grid.printPeiceMove(nodeElephant);
+        }
+
+        //elephant's moves
+        bool b = false;
+        vector<Node*> nodePawns = grid.getPawnsTurnPosition();
+        for(Node *nodePawn: nodePawns){
+            grid.getPawnsMoves(nodePawn);
+            grid.printPeiceMove(nodePawn, b);
         }
         cout << endl;
     }
