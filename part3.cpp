@@ -23,7 +23,7 @@ class Node{
     public:
         char file;
         int rank;
-        char peice;
+        char piece;
         string position;
         int columnNum;
         int rowNum;
@@ -43,7 +43,7 @@ class Node{
             file = char(column+96);
             rank = row;
             position = file + to_string(rank);
-            peice = v;
+            piece = v;
             columnNum = column;
             rowNum = row;
         }
@@ -109,10 +109,10 @@ class Grid{
             for(int i = 0; i < 7; i++){
                 for(int j = 0; j < 7; j++){
                     if(j != 6){
-                        cout << grid[i * 7 + j].peice << " ";
+                        cout << grid[i * 7 + j].piece << " ";
                     }
                     else{
-                        cout << grid[i * 7 + j].peice << endl;
+                        cout << grid[i * 7 + j].piece << endl;
                     }
                 }
             }
@@ -127,36 +127,36 @@ class Grid{
 
         void printNodeInfo(int file, int rank){
             Node *node = getNode(file, rank);
-            cout << node->position << " = " << node->peice << endl;
+            cout << node->position << " = " << node->piece << endl;
         }
 
         void addLocationOfPieces(){
             for(int i = 1; i <= 7; i++){
                 for(int j = 1; j <= 7; j++){
                     Node *node = getNode(i, j);
-                    char peice = node->peice;
-                    if(peice == 'P'){
+                    char piece = node->piece;
+                    if(piece == 'P'){
                         whitePawnPositions.push_back(node);
                     }
-                    else if(peice == 'p'){
+                    else if(piece == 'p'){
                         blackPawnPositions.push_back(node); 
                     }
-                    else if(peice == 'E'){
+                    else if(piece == 'E'){
                         whiteElephantPositions.push_back(node);
                     }
-                    else if(peice == 'e'){
+                    else if(piece == 'e'){
                         blackElephantPositions.push_back(node);
                     }
-                    else if(peice == 'L'){
+                    else if(piece == 'L'){
                         whiteLionPosition = node;
                     }
-                    else if(peice == 'l'){
+                    else if(piece == 'l'){
                         blackLionPosition = node;
                     }
-                    else if(peice == 'Z'){
+                    else if(piece == 'Z'){
                         whiteZebraPosition = node;
                     }
-                    else if(peice == 'z'){
+                    else if(piece == 'z'){
                         blackZebraPosition = node;
                     }
                 }
@@ -205,12 +205,12 @@ class Grid{
                 if(colorGoinTo == "empty"){  //empty node
                     return true;
                 }
-                else if(colorGoinTo == "white"){  //we are going to a white peice
+                else if(colorGoinTo == "white"){  //we are going to a white piece
                     if(!isWhite){
                         return true;
                     }
                 }
-                else{  //we are going to a black peice
+                else{  //we are going to a black piece
                     if(isWhite){
                         return true;
                     }
@@ -227,11 +227,11 @@ class Grid{
         }
 
         string getColor(Node *node){
-            char peice = node->peice;
-            if(peice == 'y'){
+            char piece = node->piece;
+            if(piece == 'y'){
                 return "empty";
             }
-            else if(isCapital(peice)){
+            else if(isCapital(piece)){
                 return "white";
             }
             else{
@@ -264,7 +264,7 @@ class Grid{
                         string colorGoinTo = getColor(temp);
                         if(colorGoinTo == "empty"){
                             temp = temp->topLeft;
-                            if(temp->peice == 'l'){
+                            if(temp->piece == 'l'){
                                 return temp;
                             }
                         }
@@ -274,7 +274,7 @@ class Grid{
                         string colorGoinTo = getColor(temp);
                         if(colorGoinTo == "empty"){
                             temp = temp->topRight;
-                            if(temp->peice == 'l'){
+                            if(temp->piece == 'l'){
                                 return temp;
                             }
                         }
@@ -282,7 +282,7 @@ class Grid{
                 }
                 temp = node->top;
                 while(temp != nullptr){
-                    if(temp->peice == 'l'){
+                    if(temp->piece == 'l'){
                         return temp;
                     }
                     else{
@@ -303,7 +303,7 @@ class Grid{
                         string colorGoinTo = getColor(temp);
                         if(colorGoinTo == "empty"){
                             temp = temp->bottomLeft;
-                            if(temp->peice == 'L'){
+                            if(temp->piece == 'L'){
                                 return temp;
                             }
                         }
@@ -313,7 +313,7 @@ class Grid{
                         string colorGoinTo = getColor(temp);
                         if(colorGoinTo == "empty"){
                             temp = temp->bottomRight;
-                            if(temp->peice == 'L'){
+                            if(temp->piece == 'L'){
                                 return temp;
                             }
                         }
@@ -321,7 +321,7 @@ class Grid{
                 }
                 temp = node->bottom;
                 while(temp != nullptr){
-                    if(temp->peice == 'L'){
+                    if(temp->piece == 'L'){
                         return temp;
                     }
                     else{
@@ -502,14 +502,14 @@ class Grid{
                 if(node->rank > 4){
                     nodeTo = node->bottom;
                     if(nodeTo != nullptr){
-                        if(nodeTo->peice == 'y'){
+                        if(nodeTo->piece == 'y'){
                             temp = nodeTo->bottom;
-                            if(temp->peice == 'y'){
+                            if(temp->piece == 'y'){
                                 PossibleMove possibleMove(temp);
                                 node->possibleMovesAndFuturState.push_back(possibleMove);
                             }
                         }
-                        if(nodeTo != nullptr && nodeTo->peice == 'y'){
+                        if(nodeTo != nullptr && nodeTo->piece == 'y'){
                             PossibleMove possibleMove(nodeTo);
                             node->possibleMovesAndFuturState.push_back(possibleMove);
                         }
@@ -540,11 +540,11 @@ class Grid{
                 if(node->rank < 4){
                     nodeTo = node->top;
                     if(nodeTo != nullptr){
-                        if(nodeTo->peice == 'y'){
+                        if(nodeTo->piece == 'y'){
                             PossibleMove possibleMove(nodeTo);
                             node->possibleMovesAndFuturState.push_back(possibleMove);
                             temp = nodeTo->top;
-                            if(temp->peice == 'y'){
+                            if(temp->piece == 'y'){
                                 PossibleMove possibleMove(temp);
                                 node->possibleMovesAndFuturState.push_back(possibleMove);
                             }
@@ -558,23 +558,6 @@ class Grid{
                 }
             }
         }
-
-        // void printPeiceMove(Node *node, bool &b){
-        //     vector<Node*> peiceMoves = node->possibleMoves;
-        //     string pos = node->position;
-        //     for(int i = 0; i < peiceMoves.size(); i++){
-        //         if(b){
-        //             cout << " ";
-        //         }
-        //         else{
-        //             b = true;
-        //         }
-        //         cout << pos << peiceMoves[i]->position;
-        //         // if(i != peiceMoves.size()-1){
-        //         //     cout << " ";
-        //         // }
-        //     }
-        // }
 
         void printPeiceMove(Node *node){
             vector<PossibleMove> possibleMoves = node->possibleMovesAndFuturState;
@@ -658,6 +641,55 @@ class Grid{
             }
         }
 
+        void updateStringAfterNodeAdded(int position, string piece, int colNumBefore, Node *finalNode){
+            int colNumCurrent = finalNode->columnNum;
+            cout << "colNumCurrent:" <<colNumCurrent << " colNumBefore:" << colNumBefore<< endl;
+            char before, after;
+            if(position > 0){  //must check that this is correct
+                before = positionOfPieces[position-1];
+            }
+            if(position < positionOfPieces.size()){  //must check that this is correct
+                after = positionOfPieces[position];
+            }
+            cout <<"Before:"<< before << " After:" << after << endl;
+            if(after == '1'){
+                cout <<"No" << endl;
+                positionOfPieces.erase(position, 1);
+                positionOfPieces.insert(position, piece);
+            }
+            else if(isdigit(before)){ // no digit after possible
+                int totalBefore = colNumCurrent-colNumBefore;
+                int totalAfter = (int(before)-48) -totalBefore -1;
+                cout <<"totalBefore:"<< totalBefore << " totalAfter:" << totalAfter << endl;
+                if(totalBefore > 0){
+                    positionOfPieces.erase(position-1, 1);
+                    positionOfPieces.insert(position-1, to_string(totalBefore));
+                    positionOfPieces.insert(position, piece);
+                }
+                else{
+                    cout << "Hi" << endl;
+                    positionOfPieces.erase(position-1, 1);
+                    positionOfPieces.insert(position-1, piece);
+                }
+                if(totalAfter >0){
+                    positionOfPieces.insert(position+1, to_string(totalAfter));
+                }
+            }
+            else{
+                int totalAfter = (int(after)-48) -1;
+                cout << "totalAfter:" << totalAfter << endl;
+                if(totalAfter > 0){
+                    positionOfPieces.erase(position, 1);
+                    positionOfPieces.insert(position, piece);
+                    positionOfPieces.insert(position+1, to_string(totalAfter));
+                }
+                else{  //need to check
+                    positionOfPieces.erase(position, 1);
+                    positionOfPieces.insert(position, piece);
+                }
+            }
+        }
+
         void removeNode(Node *node){
             int rowNum = node->rowNum;
             int colNum = node->columnNum;
@@ -685,8 +717,41 @@ class Grid{
             }
         }
 
+        void addNode(Node *node, Node *finalNode){
+            string stringPiece(1, node->piece);
+            int rowNum = finalNode->rowNum;
+            int colNum = finalNode->columnNum;
+            int rowIterationNum = 7;
+            int colIterationNum = 1;
+            int intC =0;
+            for(int position = 0; position < positionOfPieces.length(); position++){
+                char c = positionOfPieces[position];
+                if(rowNum == rowIterationNum){
+                    if(colNum <= colIterationNum){  //<= because we can add extra to the colIterationNum
+                        updateStringAfterNodeAdded(position, stringPiece, colIterationNum-intC, finalNode);  //update string here
+                        return;
+                    }
+                    else if(isdigit(c)){
+                        intC = int(c)-48;
+                        colIterationNum += intC;
+                    }
+                    else{
+                        colIterationNum++;
+                    }
+                }
+                else if(c == '/'){
+                    rowIterationNum--;
+                    colIterationNum = 1;
+                }
+            }
+        }
+
         void updateStateGivenMove(Node *startNode, Node *finalNode){  //must continue here
-            removeNode(startNode);
+            removeNode(startNode); 
+            if(finalNode->piece != 'y'){  //not empty
+                removeNode(finalNode);
+            }
+            addNode(startNode, finalNode);
         }
 };
 
@@ -699,10 +764,10 @@ int main(){
     vector<char> sideToMoveArray(N);
     vector<int> moveNumberArray(N);
     vector<string> moveToBePlayedArray(N);
-    string position = "4E2/1P1Pl2/7/7/1p2L1p/6P/7";
-    char side = 'w';
+    string position = "7/3Pl2/3P1P1/7/3P3/eELP3/6E";
+    char side = 'b';
     int moveNum = 12;
-    string moveToBePlayed = "e7e6";
+    string moveToBePlayed = "a2c2";
     for(int i = 0; i < N; i++){
         // cin >> position >> side >> moveNum >> moveToBePlayed;
         positionOfPiecesArray[i] = position;
