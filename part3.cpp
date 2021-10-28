@@ -699,7 +699,7 @@ class Grid{
             int colNum = node->columnNum;
             int rowIterationNum = 7;
             int colIterationNum = 1;
-            for(int position = 0; position < possibleMove->positionOfPieces.length(); position++){
+            for(int position = 0; position < possibleMove->positionOfPieces.length()+1; position++){
                 char c = possibleMove->positionOfPieces[position];
                 if(rowNum == rowIterationNum){
                     if(colNum == colIterationNum){  //update string here
@@ -768,7 +768,7 @@ class Grid{
         void setInRiverForColorTurn(PossibleMove *possibleMove){
             int rowIterationNum = 7;
             int colIterationNum = 1;
-            for(int position = 0; position < possibleMove->positionOfPieces.length(); position++){
+            for(int position = 0; position < possibleMove->positionOfPieces.length()+1; position++){
                 char c = possibleMove->positionOfPieces[position];
                 if(rowIterationNum == 4){
                     if(c == '/'){
@@ -801,7 +801,7 @@ class Grid{
             }
             int rowIterationNum = 7;
             int colIterationNum = 1;
-            for(int position = 0; position < possibleMove->positionOfPieces.length(); position++){
+            for(int position = 0; position < possibleMove->positionOfPieces.length()+1; position++){
                 char c = possibleMove->positionOfPieces[position];
                 if(rowIterationNum == 4){
                     if(c == '/'){
@@ -858,17 +858,17 @@ int main(){
 
     //read FEN string
     int N = 1;
-    cin >> N;
+    // cin >> N;
     vector<string> positionOfPiecesArray(N);
     vector<char> sideToMoveArray(N);
     vector<int> moveNumberArray(N);
     vector<string> moveToBePlayedArray(N);
-    string position = "3E3/ze3pP/1El4/7/3P3/p2eP2/2L4";
+    string position = "7/3zl1E/PPPp3/3e1P1/1PpZ3/2LPP2/4e2";
     char side = 'b';
-    int moveNum = 32;
-    string moveToBePlayed = "c5c1";
+    int moveNum = 0;
+    string moveToBePlayed = "c3c4";
     for(int i = 0; i < N; i++){
-        cin >> position >> side >> moveNum >> moveToBePlayed;
+        // cin >> position >> side >> moveNum >> moveToBePlayed;
         positionOfPiecesArray[i] = position;
         sideToMoveArray[i] = side;
         moveNumberArray[i] = moveNum;
