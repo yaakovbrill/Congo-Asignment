@@ -13,6 +13,8 @@ class PossibleMove{
         string positionOfPieces;
         string sideToMove;
         int moveNumber;
+        string winner;
+        vector<bool> inRiverForColorTurn;
 
         PossibleMove(Node *nTo){
             nodeTo = nTo;
@@ -608,98 +610,100 @@ class Grid{
             return moveFromAndTo;
         }
 
-        void updateStringAfterNodeRemoved(int position){ 
-            positionOfPieces.erase(position, 1);
+        PossibleMove* getPossibleMove(Node *startNode, Node *finalNode){
+            for(int i =0; i< startNode->possibleMovesAndFuturState.size(); i++){
+                if(startNode->possibleMovesAndFuturState[i].nodeTo == finalNode){
+                    return &startNode->possibleMovesAndFuturState[i];
+                }
+            }
+            return nullptr;
+        }
+        void updateStringAfterNodeRemoved(int position, PossibleMove *possibleMove){ 
+            possibleMove->positionOfPieces.erase(position, 1);
             char before, after;
             if(position > 0){
-                before = positionOfPieces[position-1];
+                before = possibleMove->positionOfPieces[position-1];
             }
-            if(position < positionOfPieces.size()){
-                after = positionOfPieces[position];
+            if(position < possibleMove->positionOfPieces.size()){
+                after = possibleMove->positionOfPieces[position];
             }
             if(isdigit(before)){
                 if(isdigit(after)){
-                    positionOfPieces.erase(position-1, 2);
+                    possibleMove->positionOfPieces.erase(position-1, 2);
                     int total = int(before)-48 +1 + int(after)-48;
-                    positionOfPieces.insert(position-1, to_string(total));
+                    possibleMove->positionOfPieces.insert(position-1, to_string(total));
                 }
                 else{
-                    positionOfPieces.erase(position-1, 1);
+                    possibleMove->positionOfPieces.erase(position-1, 1);
                     int total = int(before)-48 +1;
-                    positionOfPieces.insert(position-1, to_string(total));
+                    possibleMove->positionOfPieces.insert(position-1, to_string(total));
                 }
             }
             else{
                 if(isdigit(after)){
-                    positionOfPieces.erase(position, 1);
+                    possibleMove->positionOfPieces.erase(position, 1);
                     int total = int(after)-48 +1;
-                    positionOfPieces.insert(position, to_string(total));
+                    possibleMove->positionOfPieces.insert(position, to_string(total));
                 }
                 else{
-                    positionOfPieces.insert(position, "1");
+                    possibleMove->positionOfPieces.insert(position, "1");
                 }
             }
         }
 
-        void updateStringAfterNodeAdded(int position, string piece, int colNumBefore, Node *finalNode){
+        void updateStringAfterNodeAdded(int position, string piece, int colNumBefore, Node *finalNode, PossibleMove *possibleMove){
             int colNumCurrent = finalNode->columnNum;
-            cout << "colNumCurrent:" <<colNumCurrent << " colNumBefore:" << colNumBefore<< endl;
             char before, after;
             if(position > 0){  //must check that this is correct
-                before = positionOfPieces[position-1];
+                before = possibleMove->positionOfPieces[position-1];
             }
-            if(position < positionOfPieces.size()){  //must check that this is correct
-                after = positionOfPieces[position];
+            if(position < possibleMove->positionOfPieces.size()){  //must check that this is correct
+                after = possibleMove->positionOfPieces[position];
             }
-            cout <<"Before:"<< before << " After:" << after << endl;
             if(after == '1'){
-                cout <<"No" << endl;
-                positionOfPieces.erase(position, 1);
-                positionOfPieces.insert(position, piece);
+                possibleMove->positionOfPieces.erase(position, 1);
+                possibleMove->positionOfPieces.insert(position, piece);
             }
             else if(isdigit(before)){ // no digit after possible
                 int totalBefore = colNumCurrent-colNumBefore;
                 int totalAfter = (int(before)-48) -totalBefore -1;
-                cout <<"totalBefore:"<< totalBefore << " totalAfter:" << totalAfter << endl;
                 if(totalBefore > 0){
-                    positionOfPieces.erase(position-1, 1);
-                    positionOfPieces.insert(position-1, to_string(totalBefore));
-                    positionOfPieces.insert(position, piece);
+                    possibleMove->positionOfPieces.erase(position-1, 1);
+                    possibleMove->positionOfPieces.insert(position-1, to_string(totalBefore));
+                    possibleMove->positionOfPieces.insert(position, piece);
                 }
                 else{
-                    cout << "Hi" << endl;
-                    positionOfPieces.erase(position-1, 1);
-                    positionOfPieces.insert(position-1, piece);
+                    possibleMove->positionOfPieces.erase(position-1, 1);
+                    possibleMove->positionOfPieces.insert(position-1, piece);
                 }
                 if(totalAfter >0){
-                    positionOfPieces.insert(position+1, to_string(totalAfter));
+                    possibleMove->positionOfPieces.insert(position+1, to_string(totalAfter));
                 }
             }
             else{
                 int totalAfter = (int(after)-48) -1;
-                cout << "totalAfter:" << totalAfter << endl;
                 if(totalAfter > 0){
-                    positionOfPieces.erase(position, 1);
-                    positionOfPieces.insert(position, piece);
-                    positionOfPieces.insert(position+1, to_string(totalAfter));
+                    possibleMove->positionOfPieces.erase(position, 1);
+                    possibleMove->positionOfPieces.insert(position, piece);
+                    possibleMove->positionOfPieces.insert(position+1, to_string(totalAfter));
                 }
                 else{  //need to check
-                    positionOfPieces.erase(position, 1);
-                    positionOfPieces.insert(position, piece);
+                    possibleMove->positionOfPieces.erase(position, 1);
+                    possibleMove->positionOfPieces.insert(position, piece);
                 }
             }
         }
 
-        void removeNode(Node *node){
+        void removeNode(Node *node, PossibleMove *possibleMove){
             int rowNum = node->rowNum;
             int colNum = node->columnNum;
             int rowIterationNum = 7;
             int colIterationNum = 1;
-            for(int position = 0; position < positionOfPieces.length(); position++){
-                char c = positionOfPieces[position];
+            for(int position = 0; position < possibleMove->positionOfPieces.length(); position++){
+                char c = possibleMove->positionOfPieces[position];
                 if(rowNum == rowIterationNum){
                     if(colNum == colIterationNum){  //update string here
-                        updateStringAfterNodeRemoved(position);
+                        updateStringAfterNodeRemoved(position, possibleMove);
                         return;
                     }
                     else if(isdigit(c)){
@@ -717,18 +721,18 @@ class Grid{
             }
         }
 
-        void addNode(Node *node, Node *finalNode){
+        void addNode(Node *node, Node *finalNode, PossibleMove *possibleMove){
             string stringPiece(1, node->piece);
             int rowNum = finalNode->rowNum;
             int colNum = finalNode->columnNum;
             int rowIterationNum = 7;
             int colIterationNum = 1;
             int intC =0;
-            for(int position = 0; position < positionOfPieces.length(); position++){
-                char c = positionOfPieces[position];
+            for(int position = 0; position < possibleMove->positionOfPieces.length()+1; position++){  //check if plus 1
+                char c = possibleMove->positionOfPieces[position];
                 if(rowNum == rowIterationNum){
                     if(colNum <= colIterationNum){  //<= because we can add extra to the colIterationNum
-                        updateStringAfterNodeAdded(position, stringPiece, colIterationNum-intC, finalNode);  //update string here
+                        updateStringAfterNodeAdded(position, stringPiece, colIterationNum-intC, finalNode, possibleMove);  //update string here
                         return;
                     }
                     else if(isdigit(c)){
@@ -746,12 +750,107 @@ class Grid{
             }
         }
 
-        void updateStateGivenMove(Node *startNode, Node *finalNode){  //must continue here
-            removeNode(startNode); 
-            if(finalNode->piece != 'y'){  //not empty
-                removeNode(finalNode);
+        void switchTurns(PossibleMove *possibleMove){
+            if(sideToMove == "white"){
+                possibleMove->sideToMove = "black";
             }
-            addNode(startNode, finalNode);
+            else{
+                possibleMove->sideToMove = "white";
+            }
+        }
+
+        void updateTurnCount(PossibleMove *possibleMove){
+            if(possibleMove->sideToMove == "white"){
+                possibleMove->moveNumber++;
+            }
+        }
+
+        void setInRiverForColorTurn(PossibleMove *possibleMove){
+            int rowIterationNum = 7;
+            int colIterationNum = 1;
+            for(int position = 0; position < possibleMove->positionOfPieces.length(); position++){
+                char c = possibleMove->positionOfPieces[position];
+                if(rowIterationNum == 4){
+                    if(c == '/'){
+                        return;
+                    }
+                    else if(isdigit(c)){
+                        int intC = int(c)-48;
+                        colIterationNum += intC;
+                    }
+                    else if(isCapital(c) && sideToMove == "white" || !isCapital(c) && sideToMove == "black"){  //update string here
+                        possibleMove->inRiverForColorTurn[colIterationNum-1] = true;
+                    }
+                    else{
+                        colIterationNum++;
+                    }
+                }
+                else if(c == '/'){
+                    rowIterationNum--;
+                }
+            }
+        }
+
+        void removeRiverForColorTurn(PossibleMove *possibleMove){
+            int drownPieceCol;
+            for(int i =0; i<possibleMove->inRiverForColorTurn.size(); i++){
+                if(possibleMove->inRiverForColorTurn[i]){
+                    drownPieceCol = i+1;
+                    break;
+                }
+            }
+            int rowIterationNum = 7;
+            int colIterationNum = 1;
+            for(int position = 0; position < possibleMove->positionOfPieces.length(); position++){
+                char c = possibleMove->positionOfPieces[position];
+                if(rowIterationNum == 4){
+                    if(c == '/'){
+                        return;
+                    }
+                    else if(isdigit(c)){
+                        int intC = int(c)-48;
+                        colIterationNum += intC;
+                    }
+                    else if(colIterationNum == drownPieceCol){  //update string here
+                        updateStringAfterNodeRemoved(position, possibleMove);
+                        return;
+                    }
+                    else{
+                        colIterationNum++;
+                    }
+                }
+                else if(c == '/'){
+                    rowIterationNum--;
+                }
+            }
+        }
+
+        void updateStateGivenMove(Node *startNode, Node *finalNode){  //must continue here
+            PossibleMove *possibleMove = getPossibleMove(startNode, finalNode);
+            possibleMove->positionOfPieces = positionOfPieces;  //initialize
+            possibleMove->moveNumber = moveNumber;  //initialize
+            possibleMove->inRiverForColorTurn = {false, false, false, false, false, false, false};
+            setInRiverForColorTurn(possibleMove);
+            removeNode(startNode, possibleMove);
+            if(finalNode->piece != 'y'){  //not empty (capture)
+                if(finalNode->piece == 'l'){
+                    possibleMove->winner = "white";
+                }
+                else if(finalNode->piece == 'L'){
+                    possibleMove->winner = "black";
+                }
+                removeNode(finalNode, possibleMove);
+            }
+            addNode(startNode, finalNode, possibleMove);
+            switchTurns(possibleMove);
+            updateTurnCount(possibleMove);
+            if(startNode->rowNum == 4){
+                if(finalNode->rowNum == 4){
+                    possibleMove->inRiverForColorTurn[finalNode->columnNum-1] = true;
+                }
+                possibleMove->inRiverForColorTurn[startNode->columnNum-1] = false;
+            }
+            removeRiverForColorTurn(possibleMove);
         }
 };
 
@@ -759,17 +858,17 @@ int main(){
 
     //read FEN string
     int N = 1;
-    // cin >> N;
+    cin >> N;
     vector<string> positionOfPiecesArray(N);
     vector<char> sideToMoveArray(N);
     vector<int> moveNumberArray(N);
     vector<string> moveToBePlayedArray(N);
-    string position = "7/3Pl2/3P1P1/7/3P3/eELP3/6E";
+    string position = "3E3/ze3pP/1El4/7/3P3/p2eP2/2L4";
     char side = 'b';
-    int moveNum = 12;
-    string moveToBePlayed = "a2c2";
+    int moveNum = 32;
+    string moveToBePlayed = "c5c1";
     for(int i = 0; i < N; i++){
-        // cin >> position >> side >> moveNum >> moveToBePlayed;
+        cin >> position >> side >> moveNum >> moveToBePlayed;
         positionOfPiecesArray[i] = position;
         sideToMoveArray[i] = side;
         moveNumberArray[i] = moveNum;
@@ -814,10 +913,19 @@ int main(){
             // grid.printPeiceMove(nodePawn);
         }
 
-        // NB use!!!
         vector<Node*> moveFromAndTo = grid.getMoveFromAndTo(moveToBePlayedArray[i]);
         grid.updateStateGivenMove(moveFromAndTo[0], moveFromAndTo[1]);
-        cout << grid.positionOfPieces << endl;
+        PossibleMove *possibleMove = grid.getPossibleMove(moveFromAndTo[0], moveFromAndTo[1]);
+        cout << possibleMove->positionOfPieces << " " << possibleMove->sideToMove[0] << " " << possibleMove->moveNumber<< endl;
+        if(possibleMove->winner == "white"){
+            cout << "White wins" << endl;
+        }
+        else if(possibleMove->winner == "black"){
+            cout << "Black wins" << endl;
+        }
+        else{
+            cout << "Continue" << endl;
+        }
     }
 
     return 0;
