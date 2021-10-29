@@ -620,7 +620,7 @@ class Grid{
         }
         void updateStringAfterNodeRemoved(int position, PossibleMove *possibleMove){ 
             possibleMove->positionOfPieces.erase(position, 1);
-            char before, after;
+            char before = '\0', after = '\0';
             if(position > 0){
                 before = possibleMove->positionOfPieces[position-1];
             }
@@ -653,7 +653,7 @@ class Grid{
 
         void updateStringAfterNodeAdded(int position, string piece, int colNumBefore, Node *finalNode, PossibleMove *possibleMove){
             int colNumCurrent = finalNode->columnNum;
-            char before, after;
+            char before = '\0', after = '\0';
             if(position > 0){  //must check that this is correct
                 before = possibleMove->positionOfPieces[position-1];
             }
@@ -700,7 +700,13 @@ class Grid{
             int rowIterationNum = 7;
             int colIterationNum = 1;
             for(int position = 0; position < possibleMove->positionOfPieces.length()+1; position++){
-                char c = possibleMove->positionOfPieces[position];
+                char c = '\0';
+                if(position == possibleMove->positionOfPieces.length()){
+                    c = '/';
+                }
+                else{
+                    c = possibleMove->positionOfPieces[position];
+                }
                 if(rowNum == rowIterationNum){
                     if(colNum == colIterationNum){  //update string here
                         updateStringAfterNodeRemoved(position, possibleMove);
@@ -728,8 +734,14 @@ class Grid{
             int rowIterationNum = 7;
             int colIterationNum = 1;
             int intC =0;
-            for(int position = 0; position < possibleMove->positionOfPieces.length()+1; position++){  //check if plus 1
-                char c = possibleMove->positionOfPieces[position];
+            for(int position = 0; position < possibleMove->positionOfPieces.length()+1; position++){
+                char c = '\0';
+                if(position == possibleMove->positionOfPieces.length()){
+                    c = '/';
+                }
+                else{
+                    c = possibleMove->positionOfPieces[position];
+                }
                 if(rowNum == rowIterationNum){
                     if(colNum <= colIterationNum){  //<= because we can add extra to the colIterationNum
                         updateStringAfterNodeAdded(position, stringPiece, colIterationNum-intC, finalNode, possibleMove);  //update string here
@@ -769,7 +781,13 @@ class Grid{
             int rowIterationNum = 7;
             int colIterationNum = 1;
             for(int position = 0; position < possibleMove->positionOfPieces.length()+1; position++){
-                char c = possibleMove->positionOfPieces[position];
+                char c = '\0';
+                if(position == possibleMove->positionOfPieces.length()){
+                    c = '/';
+                }
+                else{
+                    c = possibleMove->positionOfPieces[position];
+                }
                 if(rowIterationNum == 4){
                     if(c == '/'){
                         return;
@@ -802,7 +820,13 @@ class Grid{
             int rowIterationNum = 7;
             int colIterationNum = 1;
             for(int position = 0; position < possibleMove->positionOfPieces.length()+1; position++){
-                char c = possibleMove->positionOfPieces[position];
+                char c = '\0';
+                if(position == possibleMove->positionOfPieces.length()){
+                    c = '/';
+                }
+                else{
+                    c = possibleMove->positionOfPieces[position];
+                }
                 if(rowIterationNum == 4){
                     if(c == '/'){
                         return;
@@ -858,7 +882,7 @@ int main(){
 
     //read FEN string
     int N = 1;
-    // cin >> N;
+    cin >> N;
     vector<string> positionOfPiecesArray(N);
     vector<char> sideToMoveArray(N);
     vector<int> moveNumberArray(N);
@@ -868,7 +892,7 @@ int main(){
     int moveNum = 0;
     string moveToBePlayed = "c3c4";
     for(int i = 0; i < N; i++){
-        // cin >> position >> side >> moveNum >> moveToBePlayed;
+        cin >> position >> side >> moveNum >> moveToBePlayed;
         positionOfPiecesArray[i] = position;
         sideToMoveArray[i] = side;
         moveNumberArray[i] = moveNum;
