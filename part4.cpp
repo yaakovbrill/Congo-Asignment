@@ -884,12 +884,8 @@ class Grid{
         void evaluationFunction(Node *nodeLion, Node *nodeLionOppTurn, Node *nodeZebra, Node *nodeZebraOppTurn, vector<Node*> nodeElephants, vector<Node*> nodeElephantsOppTurn, vector<Node*> nodePawns, vector<Node*> nodePawnsOppTurn){
             myTurn = 0;
             notMyTurn = 0;
-            bool whiteToPlay = false;
-            if(sideToMove == "white"){
-                whiteToPlay = true;
-            }
-            if(nodeLion != nullptr){  //lion is alive
-                if(nodeLionOppTurn != nullptr){  //lion opp turn is alive
+            if(nodeLion != nullptr){  //my lion's turn is alive
+                if(nodeLionOppTurn != nullptr){  //lion's opp turn is alive
                     if(nodeZebra != nullptr){
                         myTurn+=300;
                     }
@@ -900,37 +896,15 @@ class Grid{
                     notMyTurn+=nodeElephantsOppTurn.size()*200;
                     myTurn+=nodePawns.size()*100;
                     notMyTurn+=nodePawnsOppTurn.size()*100;
-                    rawScore = myTurn - notMyTurn;
                 }
-                else if(nodeLion->piece == 'L'){ //black lion is missing
+                else{ //lion's opp turn is dead
                     myTurn = 10000;
-                    rawScore = myTurn;
-                    if(!whiteToPlay){
-                        rawScore*=-1;
-                    }
-                }
-                else{   //white lion is missing
-                    myTurn = 10000;
-                    rawScore = -myTurn;
-                    if(!whiteToPlay){
-                        rawScore*=-1;
-                    }
                 }
             }
-            else if(nodeLionOppTurn != nullptr && nodeLionOppTurn->piece == 'L'){ //black lion is missing
+            else{  //my lion's turn is dead
                 notMyTurn = 10000;
-                rawScore = notMyTurn;
-                if(!whiteToPlay){
-                    rawScore*=-1;
-                }
             }
-            else{
-                notMyTurn = 10000;
-                rawScore = -notMyTurn;
-                if(!whiteToPlay){
-                    rawScore*=-1;
-                }
-            }
+            rawScore = myTurn - notMyTurn;
         }
 };
 
