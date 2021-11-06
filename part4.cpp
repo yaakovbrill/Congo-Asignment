@@ -2,8 +2,11 @@
 #include <vector>
 #include <ctype.h>
 #include <string>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
+long long totalBigTime =0;
 
 class Node;
 
@@ -936,7 +939,15 @@ Grid makeMove(Grid currentState, Node *move, Node *endMove){
     return nextState;
 }
 
+template <class T = std::chrono::milliseconds>
+inline int64_t getCurrentTime() {
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    auto duration = now.time_since_epoch();
+    return std::chrono::duration_cast<T>(duration).count();
+}
+
 int miniMax(Grid currentState, int depth){
+    // cout << depth << endl;
     int rawScore = currentState.evaluationFunction();
     bool gameOver = isGameOver(rawScore);
     if(gameOver || depth <=0){
@@ -948,10 +959,15 @@ int miniMax(Grid currentState, int depth){
     for(Node* move: moves){
         vector<PossibleMove> possibleMoves = move->possibleMovesAndFuturState;
         for(int i=0; i<possibleMoves.size(); i++){
+            // milliseconds startTime = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
             Node *endMove = possibleMoves[i].nodeTo;
 
             //all for the new state
             Grid nextState = makeMove(currentState, move, endMove);
+            // milliseconds endTime = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
+            // long long totalTime = endTime.count()- startTime.count();
+            // cout << totalTime <<endl;
+            // totalBigTime+=totalTime;
             nextState.createGrid();
             nextState.addLocationOfPieces();
             nextState.setNodeAdjacencies();
@@ -1103,7 +1119,11 @@ int main(){
         // }
         // // grid.evaluationFunction();
         // cout << grid.rawScore << endl;
+        // milliseconds startTime = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
         int minimax = miniMax(grid, 2);
+        // milliseconds endTime = duration_cast< milliseconds >(system_clock::now().time_since_epoch());
+        // cout <<"Total Time taken: "<<endTime.count()- startTime.count()<< endl;
+        // cout <<"Individual time: " << totalBigTime << endl;
         cout << minimax << endl;
     }
 
