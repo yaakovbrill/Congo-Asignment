@@ -5,25 +5,55 @@
 
 using namespace std;
 
-class Node;
+// class Node;
 
-class PossibleMove{
-    public:
-        Node *nodeFrom;
-        Node *nodeTo;
-        string positionOfPieces;
-        string sideToMove;
-        int moveNumber;
-        string winner;
-        char piece; 
-        vector<bool> inRiverForColorTurn;
+// class PossibleMove{
+//     public:
+//         Node *nodeFrom;
+//         Node *nodeTo;
+//         string positionOfPieces;
+//         string sideToMove;
+//         int moveNumber;
+//         string winner;
+//         char piece; 
+//         int value;
+//         vector<bool> inRiverForColorTurn;
 
-        PossibleMove(Node *nFrom, Node *nTo, char p){
-            nodeFrom = nFrom;
-            nodeTo = nTo;
-            piece = p;
-        }
-};
+//         PossibleMove(Node *nFrom, Node *nTo, char p){
+//             nodeFrom = nFrom;
+//             nodeTo = nTo;
+//             piece = p;
+            
+//             char pieceCaptured = nTo->piece;
+//             if(pieceCaptured == 'P'){
+//                 value = 1;
+//             }
+//             else if(pieceCaptured == 'p'){
+//                 value = 1; 
+//             }
+//             else if(pieceCaptured == 'E'){
+//                 value = 1;
+//             }
+//             else if(pieceCaptured == 'e'){
+//                 value = 1;
+//             }
+//             else if(pieceCaptured == 'L'){
+//                 value = 11;
+//             }
+//             else if(pieceCaptured == 'l'){
+//                 value = 11;
+//             }
+//             else if(pieceCaptured == 'Z'){
+//                 value = 1;
+//             }
+//             else if(pieceCaptured == 'z'){
+//                 value = 1;
+//             }
+//             else{
+//                 value = 0;
+//             }
+//         }
+// };
 
 class Node{
     public:
@@ -53,6 +83,54 @@ class Node{
         }
 };
 
+class PossibleMove{
+    public:
+        Node *nodeFrom;
+        Node *nodeTo;
+        string positionOfPieces;
+        string sideToMove;
+        int moveNumber;
+        string winner;
+        char piece; 
+        int value;
+        vector<bool> inRiverForColorTurn;
+
+        PossibleMove(Node *nFrom, Node *nTo, char p){
+            nodeFrom = nFrom;
+            nodeTo = nTo;
+            piece = p;
+            
+            char pieceCaptured = nTo->piece;
+            if(pieceCaptured == 'P'){
+                value = 1;
+            }
+            else if(pieceCaptured == 'p'){
+                value = 1; 
+            }
+            else if(pieceCaptured == 'E'){
+                value = 1;
+            }
+            else if(pieceCaptured == 'e'){
+                value = 1;
+            }
+            else if(pieceCaptured == 'L'){
+                value = 11;
+            }
+            else if(pieceCaptured == 'l'){
+                value = 11;
+            }
+            else if(pieceCaptured == 'Z'){
+                value = 1;
+            }
+            else if(pieceCaptured == 'z'){
+                value = 1;
+            }
+            else{
+                value = 0;
+            }
+        }
+};
+
 class Grid{
     public:
         vector<Node> grid;
@@ -70,6 +148,7 @@ class Grid{
         Node *blackZebraPosition = nullptr;
 
         vector<PossibleMove> moves;
+        vector<PossibleMove> movesNotTurn;
 
         //constructor
         Grid(string position, char side, int moveNum){
@@ -373,6 +452,26 @@ class Grid{
             }
         }
 
+        void getLionMovesNotTurn(Node *node){
+            string pos = node->position;
+            string myColor = getColor(node);
+            Node *lionToLion = getLionToLionMove(node, myColor);
+            char piece = node->piece;
+            vector<Node*> aroundNode = {node->bottomLeft, node->left, node->topLeft, node->bottom, node->top, node->bottomRight, node->right, node->topRight};
+            for(Node *nodeTo: aroundNode){
+                if(isBlockValid(myColor, nodeTo)){
+                    if(isInCastle(myColor, nodeTo)){
+                        PossibleMove possibleMove(node, nodeTo, piece);
+                        movesNotTurn.push_back(possibleMove);
+                    }
+                }
+            }
+            if(lionToLion != nullptr){
+                PossibleMove possibleMove(node, lionToLion, piece);
+                movesNotTurn.push_back(possibleMove);
+            }
+        }
+
         void getZebraMoves(Node *node){
             Node *nodeTo, *temp;
             string pos = node->position;
@@ -423,6 +522,61 @@ class Grid{
                     if(isBlockValid(myColor, temp)){
                         PossibleMove possibleMove(node, temp, piece);
                         moves.push_back(possibleMove);
+                    }
+                }
+            }
+        }
+
+        void getZebraMovesNotTurn(Node *node){
+            Node *nodeTo, *temp;
+            string pos = node->position;
+            string myColor = getColor(node);
+            char piece = node->piece;
+            for(int i = 0; i < 4; i++){
+                if(i == 0 || i == 1){
+                    nodeTo = node->left;
+                }
+                else if(i == 2 || i == 3){
+                    nodeTo = node->right;
+                }
+                if(nodeTo != nullptr){
+                    if(i == 0){
+                        nodeTo = nodeTo->left;
+                    }
+                    else if(i == 3){
+                        nodeTo = nodeTo->right;
+                    }
+                }
+                else{
+                    continue;
+                }
+
+                if(nodeTo != nullptr){
+                    if(i == 0 || i == 3){
+                        temp = nodeTo->bottom;
+                    }
+                    else if(i == 1 || i == 2){
+                        temp = nodeTo->bottom;
+                        if(temp != nullptr){
+                            temp = temp->bottom;
+                        }
+                    }
+                    if(isBlockValid(myColor, temp)){
+                        PossibleMove possibleMove(node, temp, piece);
+                        movesNotTurn.push_back(possibleMove);
+                    }
+                    if(i == 0 || i == 3){
+                        temp = nodeTo->top;
+                    }
+                    else if(i == 1 || i == 2){
+                        temp = nodeTo->top;
+                        if(temp != nullptr){
+                            temp = temp->top;
+                        }
+                    }
+                    if(isBlockValid(myColor, temp)){
+                        PossibleMove possibleMove(node, temp, piece);
+                        movesNotTurn.push_back(possibleMove);
                     }
                 }
             }
@@ -484,6 +638,66 @@ class Grid{
                 if(isBlockValid(myColor, nodeTo)){
                     PossibleMove possibleMove(node, nodeTo, piece);
                     moves.push_back(possibleMove);
+                }
+            }
+        }
+
+        void getElephantsMovesNotTurn(Node *node){
+            Node *nodeTo, *temp;
+            string pos = node->position;
+            string myColor = getColor(node);
+            char piece = node->piece;
+            for(int i = 0; i < 4; i++){
+                if(i == 0){
+                    nodeTo = node->left;
+                }
+                else if(i == 1){
+                    nodeTo = node->bottom;
+                }
+                else if(i == 2){
+                    nodeTo = node->top;
+                }
+                else{
+                    nodeTo = node->right;
+                }
+                if(nodeTo != nullptr){
+                    if(i == 0){
+                        temp = nodeTo->left;
+                    }
+                    else if(i == 1){
+                        temp = nodeTo->bottom;
+                    }
+                    else if(i == 2){
+                        if(isBlockValid(myColor, nodeTo)){
+                            PossibleMove possibleMove(node, nodeTo, piece);
+                            movesNotTurn.push_back(possibleMove);
+                        }
+                        temp = nodeTo->top;
+                    }
+                    else{
+                        if(isBlockValid(myColor, nodeTo)){
+                            PossibleMove possibleMove(node, nodeTo, piece);
+                            movesNotTurn.push_back(possibleMove);
+                        }
+                        temp = nodeTo->right;
+                    }
+                }
+                else{
+                    continue;
+                }
+
+                if(temp != nullptr){
+                    if(isBlockValid(myColor, temp)){
+                        PossibleMove possibleMove(node, temp, piece);
+                        movesNotTurn.push_back(possibleMove);
+                    }
+                }
+                if(i == 2 || i == 3){
+                    continue;
+                }
+                if(isBlockValid(myColor, nodeTo)){
+                    PossibleMove possibleMove(node, nodeTo, piece);
+                    movesNotTurn.push_back(possibleMove);
                 }
             }
         }
@@ -559,6 +773,77 @@ class Grid{
             }
         }
 
+        void getPawnsMovesNotTurn(Node *node){
+            Node *nodeTo, *temp;
+            string pos = node->position;
+            string myColor = getColor(node);
+            char piece = node->piece;
+            if(myColor == "white"){
+                nodeTo = node->topLeft;
+                if(isBlockValid(myColor, nodeTo)){
+                    PossibleMove possibleMove(node, nodeTo, piece);
+                    movesNotTurn.push_back(possibleMove);
+                }
+                if(node->rank > 4){
+                    nodeTo = node->bottom;
+                    if(nodeTo != nullptr){
+                        if(nodeTo->piece == 'y'){
+                            temp = nodeTo->bottom;
+                            if(temp->piece == 'y'){
+                                PossibleMove possibleMove(node, temp, piece);
+                                movesNotTurn.push_back(possibleMove);
+                            }
+                        }
+                        if(nodeTo != nullptr && nodeTo->piece == 'y'){
+                            PossibleMove possibleMove(node, nodeTo, piece);
+                            movesNotTurn.push_back(possibleMove);
+                        }
+                    }
+                }
+                nodeTo = node->top;
+                if(isBlockValid(myColor, nodeTo)){
+                    PossibleMove possibleMove(node, nodeTo, piece);
+                    movesNotTurn.push_back(possibleMove);
+                }
+                nodeTo = node->topRight;
+                if(isBlockValid(myColor, nodeTo)){
+                    PossibleMove possibleMove(node, nodeTo, piece);
+                    movesNotTurn.push_back(possibleMove);
+                }
+            }
+            else if(myColor == "black"){
+                nodeTo = node->bottomLeft;
+                if(isBlockValid(myColor, nodeTo)){
+                    PossibleMove possibleMove(node, nodeTo, piece);
+                    movesNotTurn.push_back(possibleMove);
+                }
+                nodeTo = node->bottom;
+                if(isBlockValid(myColor, nodeTo)){
+                    PossibleMove possibleMove(node, nodeTo, piece);
+                    movesNotTurn.push_back(possibleMove);
+                }
+                if(node->rank < 4){
+                    nodeTo = node->top;
+                    if(nodeTo != nullptr){
+                        if(nodeTo->piece == 'y'){
+                            PossibleMove possibleMove(node, nodeTo, piece);
+                            movesNotTurn.push_back(possibleMove);
+                            temp = nodeTo->top;
+                            if(temp->piece == 'y'){
+                                PossibleMove possibleMove(node, temp, piece);
+                                movesNotTurn.push_back(possibleMove);
+                            }
+                        }
+                    }
+                }
+                nodeTo = node->bottomRight;
+                if(isBlockValid(myColor, nodeTo)){
+                    PossibleMove possibleMove(node, nodeTo, piece);
+                    movesNotTurn.push_back(possibleMove);
+                }
+            }
+        }
+
         // void printPeiceMove(Node *node){
         //     vector<PossibleMove> possibleMoves = node->possibleMovesAndFuturState;
         //     string pos = node->position;
@@ -578,11 +863,25 @@ class Grid{
             return blackLionPosition;
         }
 
+        Node* getLionNotTurnPosition(){
+            if(sideToMove == "white"){
+                return blackLionPosition;
+            }
+            return whiteLionPosition;
+        }
+
         Node* getZebraTurnPosition(){
             if(sideToMove == "white"){
                 return whiteZebraPosition;
             }
             return blackZebraPosition;
+        }
+
+        Node* getZebraNotTurnPosition(){
+            if(sideToMove == "white"){
+                return blackZebraPosition;
+            }
+            return whiteZebraPosition;
         }
 
         vector<Node*> getElephantsTurnPosition(){
@@ -592,11 +891,25 @@ class Grid{
             return blackElephantPositions;
         }
 
+        vector<Node*> getElephantsNotTurnPosition(){
+            if(sideToMove == "white"){
+                return blackElephantPositions;
+            }
+            return whiteElephantPositions;
+        }
+
         vector<Node*> getPawnsTurnPosition(){
             if(sideToMove == "white"){
                 return whitePawnPositions;
             }
             return blackPawnPositions;
+        }
+
+        vector<Node*> getPawnsNotTurnPosition(){
+            if(sideToMove == "white"){
+                return blackPawnPositions;
+            }
+            return whitePawnPositions;
         }
 
         vector<Node*> getMoveFromAndTo(string moveToBePlayed){
@@ -898,6 +1211,86 @@ class Grid{
             }
             return rawScore;
         }
+
+        int evaluationFunctionAdvanced(){
+            //Material Score
+            int whiteTurn = 0;
+            int blackTurn = 0;
+            int materialScore;
+            if(whiteLionPosition != nullptr){  //my lion's turn is alive
+                if(blackLionPosition != nullptr){  //lion's opp turn is alive
+                    if(whiteZebraPosition != nullptr){
+                        whiteTurn+=300;
+                    }
+                    if(blackZebraPosition != nullptr){
+                        blackTurn+=300;
+                    }
+                    whiteTurn+=whiteElephantPositions.size()*200;
+                    blackTurn+=blackElephantPositions.size()*200;
+                    whiteTurn+=whitePawnPositions.size()*100;
+                    blackTurn+=blackPawnPositions.size()*100;
+                    materialScore = whiteTurn - blackTurn;
+                    if(whiteTurn ==0 && blackTurn ==0){
+                        return materialScore;
+                    }
+                }
+                else{ //black lion is dead
+                    materialScore = 10000;
+                    if(sideToMove == "black"){
+                        materialScore*=-1;
+                    }
+                    return materialScore;
+                }
+            }
+            else{  //white lion is dead
+                materialScore = -10000;
+                if(sideToMove == "black"){
+                    materialScore*=-1;
+                }
+                return materialScore;
+            }
+
+            //Mobility Score
+            int mobilityScoreWhite =0;
+            int mobilityScoreBlack =0; 
+            int mobilityScore = 0;
+            int attackScoreTurn =0;
+            int attackScoreNotTurn =0;
+            int attackScoreWhite = 0;
+            int attackScoreBlack = 0;
+            if(sideToMove =="white"){
+                mobilityScoreWhite = moves.size();
+                mobilityScoreBlack = movesNotTurn.size();
+            }
+            else{
+                mobilityScoreWhite = movesNotTurn.size();
+                mobilityScoreBlack = moves.size();
+            }
+            mobilityScore = mobilityScoreWhite - mobilityScoreBlack;
+            
+            //Attack Score
+            for(PossibleMove move: moves){
+                attackScoreTurn+= move.value;
+            }
+            for(PossibleMove move: movesNotTurn){
+                attackScoreNotTurn+= move.value;
+            }
+            if(sideToMove =="white"){
+                attackScoreWhite = attackScoreTurn;
+                attackScoreBlack = attackScoreNotTurn;
+            }
+            else{
+                attackScoreWhite = attackScoreNotTurn;
+                attackScoreBlack = attackScoreTurn;
+            }
+            int attackScore = attackScoreWhite - attackScoreBlack;
+
+            int rawScore = materialScore + mobilityScore + attackScore;
+            if(sideToMove == "black"){
+                rawScore*=-1;
+            }
+            return rawScore;
+        }
 };
 
 bool isGameOver(int rawScore){
@@ -970,16 +1363,16 @@ int main(){
     vector<char> sideToMoveArray(N);
     vector<int> moveNumberArray(N);
     vector<string> moveToBePlayedArray(N);
-    string position = "2ele1z/ppppppp/7/7/7/PPP1PPP/2ELE1Z";
+    string position = "7/7/4l2/7/3L3/7/7";
     char side = 'w';
-    int moveNum = 4;
-    string moveToBePlayed = "d1d2";
+    int moveNum = 46;
+    // string moveToBePlayed = "d1d2";
     for(int i = 0; i < N; i++){
         cin >> position >> side >> moveNum;
         positionOfPiecesArray[i] = position;
         sideToMoveArray[i] = side;
         moveNumberArray[i] = moveNum;
-        moveToBePlayedArray[i] = moveToBePlayed;
+        // moveToBePlayedArray[i] = moveToBePlayed;
     }
 
     //create a grid
@@ -997,11 +1390,21 @@ int main(){
             grid.getLionMoves(nodeLion);
             // grid.printPeiceMove(nodeLion);
         }
+        Node *nodeLionNotTurn = grid.getLionNotTurnPosition();
+        if(nodeLionNotTurn != nullptr){
+            grid.getLionMovesNotTurn(nodeLionNotTurn);
+            // grid.printPeiceMove(nodeLion);
+        }
 
         //zebra's moves
         Node *nodeZebra = grid.getZebraTurnPosition();
         if(nodeZebra != nullptr){
             grid.getZebraMoves(nodeZebra);
+            // grid.printPeiceMove(nodeZebra);
+        }
+        Node *nodeZebraNotTurn = grid.getZebraNotTurnPosition();
+        if(nodeZebraNotTurn != nullptr){
+            grid.getZebraMovesNotTurn(nodeZebraNotTurn);
             // grid.printPeiceMove(nodeZebra);
         }
 
@@ -1011,11 +1414,21 @@ int main(){
             grid.getElephantsMoves(nodeElephant);
             // grid.printPeiceMove(nodeElephant);
         }
+        vector<Node*> nodeElephantsNotTurn = grid.getElephantsNotTurnPosition();
+        for(Node *nodeElephantNotTurn: nodeElephantsNotTurn){
+            grid.getElephantsMovesNotTurn(nodeElephantNotTurn);
+            // grid.printPeiceMove(nodeElephant);
+        }
 
         //pawn's moves
         vector<Node*> nodePawns = grid.getPawnsTurnPosition();
         for(Node *nodePawn: nodePawns){
             grid.getPawnsMoves(nodePawn);
+            // grid.printPeiceMove(nodePawn);
+        }
+        vector<Node*> nodePawnsNotTurn = grid.getPawnsNotTurnPosition();
+        for(Node *nodePawnNotTurn: nodePawnsNotTurn){
+            grid.getPawnsMovesNotTurn(nodePawnNotTurn);
             // grid.printPeiceMove(nodePawn);
         }
 
@@ -1033,11 +1446,14 @@ int main(){
         //     cout << "Continue" << endl;
         // }
 
-        // int eval = grid.evaluationFunction();
-        // cout << eval << endl;
+        int eval = grid.evaluationFunctionAdvanced();
+        cout << eval << endl;
 
-        int minimax = miniMax(grid, 2);
-        cout << minimax << endl;
+        // int minimax = miniMax(grid, 2);
+        // cout << minimax << endl;
+        // for(PossibleMove move: grid.moves){
+        //     cout <<move.nodeFrom->position<<move.nodeTo->position<<" "<<move.value << endl;
+        // }
     }
 
     return 0;
