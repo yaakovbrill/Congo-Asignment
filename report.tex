@@ -6,8 +6,8 @@
 \usepackage{xfrac}
 
 \title{COMS3005A Report: Congo}
-\author{Names and student numbers here}
-\date{November 2021}
+\author{Yaakov Brill 2153048}
+\date{08 November 2021}
 
 \begin{document}
 
@@ -15,33 +15,54 @@
 
 \section{Methods}
 
-For each algorithm being tested, describe exactly what was done and what changes or modifications you made. If you are working individually, you may have only two algorithms: minimax with the simple evaluation function, and alpha-beta pruning with the more complex one. In that case, describe how these worked briefly, but if you made any additional changes and are excited to share them here, please do.
+\subsection{Minimax algorithm}
 
-For those working in groups, please describe the further two modifications that were made on top of alpha-beta pruning and the advanced evaluation function. Describe all four cases. If you implemented more and would like to share, please do. 
-For example:
+Definition. The Minimax algorithm assumes two agents are playing: MIN and MAX. Each agent has a turn to play and then the turn switches to the other agent. If it is MAX to play, he tries to maximise the value at each state. If it is MIN to play, he tries to minimise the value at each state. We assume that these agents are “competitive” - they always do their best at each state for their respective goal.
+
+
+How it works? The algorithm works by producing the best move at each state, given that the opponent will respond with his best move. For example, if it was MAX to play, he chooses the minimum value he is guaranteed, since we assume that the worst case will happen- MIN will pick the lowest values for himself. Similarly, if it was MIN to play, he chooses the maximum value he is guaranteed, since we assume that the worst case will happen- MAX will pick the highest values for himself.
+
+
+What was done? We used the simple evaluation function to determine the value of a given state, since we were unable to traverse through the whole search tree as it is too large. This value was based on the number of pieces the current player’s turn has minus the opponents’ pieces. For a pawn we multiplied it by 100, an elephant by 200, and a zebra by 300, representing the value of the piece. This value allowed us to pick the best move for the current state. We traversed to a depth of 2, as it would otherwise be too slow to play the game.
+
+No changes or modifications were made.
+
+\subsection{Alpha-beta pruning algorithm}
+
+What was done? We used the more complicated evaluation function to determine the value of a given state, since we were unable to traverse through the whole search tree as it is too large. This value was based on the 3 factors which are outlined in the advanced evaluation function below. This value allowed us to pick the best move for the current state. We traversed to a depth of 4, as we pruned the tree which allowed us to go 2 steps deeper into the tree as it is a similar time to the one played by Minimax with a depth of 2
+
+
+No changes or modifications were made.
+
 
 \subsection{Alpha-Beta Pruning}
 
-Briefly describe how this works here
+Alpha-beta pruning is a search algorithm which aims to reduce the number of nodes traversed and evaluated by the Minimax algorithm. We do so by omitting some nodes if they are deemed unnecessary according to the following strategy.
+
+Alpha stores the minimum score which the “max agent” is guaranteed, given that the worst case will happen (“min agent” will do his best at each move). Similarly, Beta stores the maximum score which the “min agent” is guaranteed, given that the worst case will happen (“max agent” will do his best at each move). We then prune a node when Alpha is greater than Beta. In this case, the “min agent” can guarantee a score which he already calculated before since the “max agent” will never try and go this path. Therefore, there is no need to expand on these children. We begin by assigning alpha = -∞ and beta = ∞ to the root node and since alpha is less than beta, we don't prune it.
+
+This kind of pruning clearly reduces the number of nodes traversed and therefore will reduce the time taken for a given depth. We can therefor allow Alphabeta to go deeper into the tree with the time saved on pruning.
+
 
 \subsection{Advanced evaluation function}
 
-Briefly describe how this works here
+The advanced evaluation function serves as a guide to provide us with a measure of how good a state is for whoever it is to play. We need this resulting position, because we will not be able to search all future states as the search tree is too big. 
 
-\subsection{Modification 3 (only necessary for groups)}
+We calculate this function with the equation:
 
-Describe your modification here. Try be as precise as possible. How does it work? Did you have to do any non-standard thing when implementing? What advantages do you think the modification brings to your AI?
+rawScore = change in material + change in mobility + change in attack. 
 
-\subsection{Modification 4 (only necessary for groups)}
+Change in material is simply the number of pieces for whoever’s turn it is to play minus the number of pieces of the opponent. Each piece is multiplied by the value outlined in the Minimax algorithm section. If a lion is missing for whoever it is to play, then the other player has won and the rawScore = -10000.
 
-Describe your modification here. Try be as precise as possible. How does it work? Did you have to do anything non-standard when implementing? What advantages do you think the modification brings to your AI?
+Change in mobility is simply the number of moves whoever’s turn it is to play minus the number of moves the opponent can make.
+
+Change in attack is simply the number of opposite pieces that a player is threatening to capture minus the number of opposite pieces that the other player is threatening to capture (our pieces). In addition, if the opposite piece who is threatened is a lion, we add an extra 10 points to the calculation.
+
+When we add all these three components to get:
+
+rawScore = change in material + change in mobility + change in attack, the rawScore is a more accurate calculation than the simple evaluation function done using the equation rawScore = change in material. The advanced evaluation function has taken more factors into account and will therefore give the Minimax agent a bigger chance of winning the game. It has taken the change in the number of pieces each player has, the change in the number of moves a player can make and the change in the number of captures a player can make. 
 
 \section{Results}
-
-Present your results here. If you have two agents (because you're working individually) compare the two agents directly by playing two games from the starting position (with each agent taking a turn to be black and white).
-Otherwise, you may have three agents (or more): the minimax agent, the alpha-beta pruning agent, and the agent with all modifications implemented. Compare these agents in a round-robin tournament, where each agent plays the others twice (once as white and once as black). 
-
-The kind of game you should play depends on how you have implemented everything. If your AI can search to a fixed depth only, then you should select a depth (greater than 1) for each agent such that they take roughly the same amount of time to return a move (e.g minimax to depth 2 and alpha-beta to depth 4). However, if your agent's are always able to return a move after a fixed amount of time (e.g. you're using iterative deepening), then play your games with fixed time controls (e.g. each agent is allowed X seconds per move). Report the results similarly to the tables below, where 1 -- 0 indicates a win for white, 0 -- 1 a win for black, and $\sfrac{1}{2}$ -- $\sfrac{1}{2}$ is a draw.
 
 \begin{table}[h!]
 \centering
@@ -49,17 +70,12 @@ The kind of game you should play depends on how you have implemented everything.
 \hline
                        &                     & \multicolumn{3}{c|}{Black}                                           \\ \hline
                        &                     & \textbf{Minimax} & \textbf{Alpha-Beta}           & \textbf{My Agent} \\ \hline
-\parbox[t]{2mm}{\multirow{3}{*}{\rotatebox[origin=c]{90}{White}}} & \textbf{Minimax}    & --                & $\sfrac{1}{2}$ -- $\sfrac{1}{2}$ & 0 -- 1               \\ \cline{2-5} 
-                       & \textbf{Alpha-Beta} & 1 -- 0              & --                             & 0 -- 1               \\ \cline{2-5} 
-                       & \textbf{My Agent}   & 1 --0              & 1 -- 0                           & --                 \\ \hline
+\parbox[t]{2mm}{\multirow{3}{*}{\rotatebox[origin=c]{90}{White}}} & \textbf{Minimax}    & $\sfrac{1}{2}$ -- $\sfrac{1}{2}$                & $\sfrac{1}{2}$ -- $\sfrac{1}{2}$ &                \\ \cline{2-5} 
+                       & \textbf{Alpha-Beta} & $\sfrac{1}{2}$ -- $\sfrac{1}{2}$              & $\sfrac{1}{2}$ -- $\sfrac{1}{2}$               \\ \cline{2-5} 
+                       & \textbf{My Agent}                            & --                 \\ \hline
 \end{tabular}
-\caption{Results for tournament with e.g. 30 second time controls}
+\caption{Results for tournament with Minimax depth = 2 and Alphabeta depth = 4}
 \end{table}
-
-
-\section{Optional Additional Information}
-
-If there is anything else you wish to include, please do so here.
 
 \end{document}
 

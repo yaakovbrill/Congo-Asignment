@@ -1459,7 +1459,7 @@ string playGame(Grid grid, string starts){
                 }
             }
             else{
-                alphaBeta(grid, 6, -10000000, 10000000, move, true);
+                alphaBeta(grid, 4, -10000000, 10000000, move, true);
                 grid = makeMove(grid, move);
                 grid.createGrid();
                 // grid.printGrid();
