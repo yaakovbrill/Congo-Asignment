@@ -5,56 +5,6 @@
 
 using namespace std;
 
-// class Node;
-
-// class PossibleMove{
-//     public:
-//         Node *nodeFrom;
-//         Node *nodeTo;
-//         string positionOfPieces;
-//         string sideToMove;
-//         int moveNumber;
-//         string winner;
-//         char piece; 
-//         int value;
-//         vector<bool> inRiverForColorTurn;
-
-//         PossibleMove(Node *nFrom, Node *nTo, char p){
-//             nodeFrom = nFrom;
-//             nodeTo = nTo;
-//             piece = p;
-            
-//             char pieceCaptured = nTo->piece;
-//             if(pieceCaptured == 'P'){
-//                 value = 1;
-//             }
-//             else if(pieceCaptured == 'p'){
-//                 value = 1; 
-//             }
-//             else if(pieceCaptured == 'E'){
-//                 value = 1;
-//             }
-//             else if(pieceCaptured == 'e'){
-//                 value = 1;
-//             }
-//             else if(pieceCaptured == 'L'){
-//                 value = 11;
-//             }
-//             else if(pieceCaptured == 'l'){
-//                 value = 11;
-//             }
-//             else if(pieceCaptured == 'Z'){
-//                 value = 1;
-//             }
-//             else if(pieceCaptured == 'z'){
-//                 value = 1;
-//             }
-//             else{
-//                 value = 0;
-//             }
-//         }
-// };
-
 class Node{
     public:
         char file;
@@ -194,16 +144,27 @@ class Grid{
         }
 
         void printGrid(){
+            int rowIndex =7;
             for(int i = 0; i < 7; i++){
+                cout <<rowIndex << "|";
                 for(int j = 0; j < 7; j++){
-                    if(j != 6){
-                        cout << grid[i * 7 + j].piece << " ";
+                    char piece = grid[i * 7 + j].piece;
+                    if(piece != 'y'){
+                        cout << piece;
                     }
                     else{
-                        cout << grid[i * 7 + j].piece << endl;
+                        cout << " ";
                     }
+                    cout << "|";
                 }
+                cout << endl;
+                rowIndex--;
             }
+            cout << " |";
+            for(int x = 0; x<7; x++){
+                cout << char(x+97) << "|";
+            }
+            cout<< endl << endl;
         }
 
         Node *getNode(int file, int rank){
@@ -1216,7 +1177,7 @@ class Grid{
             //Material Score
             int whiteTurn = 0;
             int blackTurn = 0;
-            int materialScore;
+            int materialScore = 0;
             if(whiteLionPosition != nullptr){  //my lion's turn is alive
                 if(blackLionPosition != nullptr){  //lion's opp turn is alive
                     if(whiteZebraPosition != nullptr){
@@ -1233,6 +1194,7 @@ class Grid{
                     if(whiteTurn ==0 && blackTurn ==0){
                         return materialScore;
                     }
+                    // cout << "materialScore " << materialScore << endl;
                 }
                 else{ //black lion is dead
                     materialScore = 10000;
@@ -1301,12 +1263,14 @@ bool isGameOver(int rawScore){
 }
 
 Grid makeMove(Grid currentState, PossibleMove &possibleMove){
+    // cout <<possibleMove.positionOfPieces << endl;
     currentState.updateStateGivenMove(possibleMove);
+    // cout <<possibleMove.positionOfPieces << endl;
     Grid nextState(possibleMove.positionOfPieces, possibleMove.sideToMove[0], possibleMove.moveNumber);
     return nextState;
 }
 
-int miniMax(Grid currentState, int depth){
+int miniMax(Grid currentState, int depth, PossibleMove &bestMove, bool first){
     int rawScore = currentState.evaluationFunction();
     bool gameOver = isGameOver(rawScore);
     if(gameOver || depth <=0){
@@ -1348,27 +1312,253 @@ int miniMax(Grid currentState, int depth){
             // grid.printPeiceMove(nodePawn);
         }
         
-        eval = -miniMax(nextState, depth-1);
-        value = max(value, eval);
+        eval = -miniMax(nextState, depth-1, bestMove, false);
+        if(eval > value){
+            value = eval;
+            if(first){
+                bestMove = move;
+            }
+        }
     }
     return value;
+}
+
+int alphaBeta(Grid currentState, int depth, int alpha, int beta, PossibleMove &bestMove, bool first){
+    int rawScore = currentState.evaluationFunctionAdvanced();
+    bool gameOver = isGameOver(rawScore);
+    if(gameOver || depth <=0){
+        return rawScore;
+    }
+    int eval;
+    int value = -10000000;
+    for(PossibleMove move: currentState.moves){
+        //all for the new state
+        Grid nextState = makeMove(currentState, move);
+        nextState.createGrid();
+        nextState.addLocationOfPiecesAndSetNodeAdjacencies();
+
+        //lion's moves
+        Node *nodeLion = nextState.getLionTurnPosition();
+        if(nodeLion != nullptr){
+            nextState.getLionMoves(nodeLion);
+            // grid.printPeiceMove(nodeLion);
+        }
+        Node *nodeLionNotTurn = nextState.getLionNotTurnPosition();
+        if(nodeLionNotTurn != nullptr){
+            nextState.getLionMovesNotTurn(nodeLionNotTurn);
+            // grid.printPeiceMove(nodeLion);
+        }
+
+        //zebra's moves
+        Node *nodeZebra = nextState.getZebraTurnPosition();
+        if(nodeZebra != nullptr){
+            nextState.getZebraMoves(nodeZebra);
+            // grid.printPeiceMove(nodeZebra);
+        }
+        Node *nodeZebraNotTurn = nextState.getZebraNotTurnPosition();
+        if(nodeZebraNotTurn != nullptr){
+            nextState.getZebraMovesNotTurn(nodeZebraNotTurn);
+            // grid.printPeiceMove(nodeZebra);
+        }
+
+        //elephant's moves
+        vector<Node*> nodeElephants = nextState.getElephantsTurnPosition();
+        for(Node *nodeElephant: nodeElephants){
+            nextState.getElephantsMoves(nodeElephant);
+            // grid.printPeiceMove(nodeElephant);
+        }
+        vector<Node*> nodeElephantsNotTurn = nextState.getElephantsNotTurnPosition();
+        for(Node *nodeElephantNotTurn: nodeElephantsNotTurn){
+            nextState.getElephantsMovesNotTurn(nodeElephantNotTurn);
+            // grid.printPeiceMove(nodeElephant);
+        }
+
+        //pawn's moves
+        vector<Node*> nodePawns = nextState.getPawnsTurnPosition();
+        for(Node *nodePawn: nodePawns){
+            nextState.getPawnsMoves(nodePawn);
+            // grid.printPeiceMove(nodePawn);
+        }
+        vector<Node*> nodePawnsNotTurn = nextState.getPawnsNotTurnPosition();
+        for(Node *nodePawnNotTurn: nodePawnsNotTurn){
+            nextState.getPawnsMovesNotTurn(nodePawnNotTurn);
+            // grid.printPeiceMove(nodePawn);
+        }
+        
+        eval = -alphaBeta(nextState, depth-1, -beta, -alpha, bestMove, false);
+        if(eval > value){
+            value = eval;
+            if(eval >= beta){
+                return beta;
+            }
+            if(first){
+                if(eval > alpha){
+                    alpha = eval;
+                    bestMove = move;
+                }
+            }
+        }
+    }
+    return alpha;
+}
+
+string playGame(Grid grid, string starts){
+    string sideToPlay = "w";
+    int moveCount = 0;
+    cout <<"Starting grid:" << endl;
+    grid.printGrid();
+    cout << endl;
+    while(moveCount < 100){
+        if(!grid.moves.empty()){  //we have moves available
+            PossibleMove move = grid.moves[0];
+            // miniMax here
+            if((sideToPlay == "w" && starts == "minimax") || (sideToPlay == "b" && starts == "alphabeta")){
+                miniMax(grid, 2, move, true);
+
+                grid = makeMove(grid, move);
+                grid.createGrid();
+                // grid.printGrid();
+                grid.addLocationOfPiecesAndSetNodeAdjacencies();
+                // grid.printLocationOfPieces();
+                // grid.printSideToMove();
+
+                //lion's moves
+                Node *nodeLion = grid.getLionTurnPosition();
+                if(nodeLion != nullptr){
+                    grid.getLionMoves(nodeLion);
+                    // grid.printPeiceMove(nodeLion);
+                }
+
+                //zebra's moves
+                Node *nodeZebra = grid.getZebraTurnPosition();
+                if(nodeZebra != nullptr){
+                    grid.getZebraMoves(nodeZebra);
+                    // grid.printPeiceMove(nodeZebra);
+                }
+
+                //elephant's moves
+                vector<Node*> nodeElephants = grid.getElephantsTurnPosition();
+                for(Node *nodeElephant: nodeElephants){
+                    grid.getElephantsMoves(nodeElephant);
+                    // grid.printPeiceMove(nodeElephant);
+                }
+
+                //pawn's moves
+                vector<Node*> nodePawns = grid.getPawnsTurnPosition();
+                for(Node *nodePawn: nodePawns){
+                    grid.getPawnsMoves(nodePawn);
+                    // grid.printPeiceMove(nodePawn);
+                }
+                cout <<"Move number:" << moveCount << endl;
+                if(sideToPlay == "w"){
+                    cout <<"White move: ";
+                }
+                else{
+                    cout <<"Black move: ";
+                    moveCount++;
+                }
+            }
+            else{
+                alphaBeta(grid, 6, -10000000, 10000000, move, true);
+                grid = makeMove(grid, move);
+                grid.createGrid();
+                // grid.printGrid();
+                grid.addLocationOfPiecesAndSetNodeAdjacencies();
+                // grid.printLocationOfPieces();
+                // grid.printSideToMove();
+
+                //lion's moves
+                Node *nodeLion = grid.getLionTurnPosition();
+                if(nodeLion != nullptr){
+                    grid.getLionMoves(nodeLion);
+                    // grid.printPeiceMove(nodeLion);
+                }
+                Node *nodeLionNotTurn = grid.getLionNotTurnPosition();
+                if(nodeLionNotTurn != nullptr){
+                    grid.getLionMovesNotTurn(nodeLionNotTurn);
+                    // grid.printPeiceMove(nodeLion);
+                }
+
+                //zebra's moves
+                Node *nodeZebra = grid.getZebraTurnPosition();
+                if(nodeZebra != nullptr){
+                    grid.getZebraMoves(nodeZebra);
+                    // grid.printPeiceMove(nodeZebra);
+                }
+                Node *nodeZebraNotTurn = grid.getZebraNotTurnPosition();
+                if(nodeZebraNotTurn != nullptr){
+                    grid.getZebraMovesNotTurn(nodeZebraNotTurn);
+                    // grid.printPeiceMove(nodeZebra);
+                }
+
+                //elephant's moves
+                vector<Node*> nodeElephants = grid.getElephantsTurnPosition();
+                for(Node *nodeElephant: nodeElephants){
+                    grid.getElephantsMoves(nodeElephant);
+                    // grid.printPeiceMove(nodeElephant);
+                }
+                vector<Node*> nodeElephantsNotTurn = grid.getElephantsNotTurnPosition();
+                for(Node *nodeElephantNotTurn: nodeElephantsNotTurn){
+                    grid.getElephantsMovesNotTurn(nodeElephantNotTurn);
+                    // grid.printPeiceMove(nodeElephant);
+                }
+
+                //pawn's moves
+                vector<Node*> nodePawns = grid.getPawnsTurnPosition();
+                for(Node *nodePawn: nodePawns){
+                    grid.getPawnsMoves(nodePawn);
+                    // grid.printPeiceMove(nodePawn);
+                }
+                vector<Node*> nodePawnsNotTurn = grid.getPawnsNotTurnPosition();
+                for(Node *nodePawnNotTurn: nodePawnsNotTurn){
+                    grid.getPawnsMovesNotTurn(nodePawnNotTurn);
+                    // grid.printPeiceMove(nodePawn);
+                }
+                cout <<"Move number:" << moveCount << endl;
+                if(sideToPlay == "w"){
+                    cout <<"White move: ";
+                }
+                else{
+                    cout <<"Black move: ";
+                    moveCount++;
+                }
+            }
+            cout << move.nodeFrom->position <<move.nodeTo->position << endl;
+            grid.printGrid();
+            cout << endl;
+
+            if(move.winner == "white" || move.winner == "black"){
+                return sideToPlay;
+            }
+
+            //swap sides
+            if(sideToPlay == "w"){
+                sideToPlay = "b";
+            }
+            else{
+                sideToPlay = "w";
+            }
+        }
+    }
+    // we played 100 moves with no winner
+    return "DRAW";
 }
 
 int main(){
 
     //read FEN string
     int N = 1;
-    cin >> N;
+    // cin >> N;
     vector<string> positionOfPiecesArray(N);
     vector<char> sideToMoveArray(N);
     vector<int> moveNumberArray(N);
     vector<string> moveToBePlayedArray(N);
-    string position = "7/7/4l2/7/3L3/7/7";
+    string position = "2ele1z/ppppppp/7/7/7/PPPPPPP/2ELE1Z";
     char side = 'w';
-    int moveNum = 46;
+    int moveNum = 4;
     // string moveToBePlayed = "d1d2";
     for(int i = 0; i < N; i++){
-        cin >> position >> side >> moveNum;
+        // cin >> position >> side >> moveNum;
         positionOfPiecesArray[i] = position;
         sideToMoveArray[i] = side;
         moveNumberArray[i] = moveNum;
@@ -1446,14 +1636,33 @@ int main(){
         //     cout << "Continue" << endl;
         // }
 
-        int eval = grid.evaluationFunctionAdvanced();
-        cout << eval << endl;
+        // int eval = grid.evaluationFunctionAdvanced();
+        // cout << eval << endl;
 
-        // int minimax = miniMax(grid, 2);
-        // cout << minimax << endl;
-        // for(PossibleMove move: grid.moves){
-        //     cout <<move.nodeFrom->position<<move.nodeTo->position<<" "<<move.value << endl;
+        // if(!grid.moves.empty()){  //We can play at least one move
+        //     PossibleMove moveToPlayMinMax = grid.moves[0];
+        //     int minimax = miniMax(grid, 2, moveToPlayMinMax, true);
+        //     cout << moveToPlayMinMax.nodeFrom->position<<" " <<moveToPlayMinMax.nodeTo->position << endl;
+        //     cout << minimax << endl;
+
+        //     PossibleMove moveToPlayAlphaBeta = grid.moves[0];
+        //     int alphabeta = alphaBeta(grid, 4, -10000000, 10000000, moveToPlayAlphaBeta, true);
+        //     cout << moveToPlayAlphaBeta.nodeFrom->position<<" " <<moveToPlayAlphaBeta.nodeTo->position << endl;
+        //     cout << alphabeta << endl;
         // }
+
+        //minimax starts(white) 
+        cout << endl;
+        cout << "Minimax starts(white)" << endl;
+        cout << "Alphabeta second(black)" << endl << endl;
+        string winner1 = playGame(grid, "minimax");
+        cout <<"Outcome: " << winner1 << endl << endl;
+
+        //alphabeta starts(white) 
+        cout << "Alphabeta starts(white)" << endl;
+        cout << "Minimax second(black)" << endl << endl;
+        string winner2 = playGame(grid, "alphabeta");
+        cout <<"Outcome: " << winner2 << endl << endl;
     }
 
     return 0;
